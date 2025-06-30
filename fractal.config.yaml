@@ -1,0 +1,91 @@
+name: 🧭 browser-node
+version: 0.1.0
+description: >
+  Фрактальний браузер, що самостійно читає, виконує та розгортає SVG/GLYPH/INTENT/DOCKERless-середовище.
+
+layers:
+  - 🧠 memory:
+      supabase_sync: true
+      vector_cache: true
+      file_indexing:
+        gdrive: true
+        onedrive: true
+        localmap: ~/.🧠/fs-index.json
+  
+  - 🌐 console:
+      system_proxy: true
+      command_bridge: true
+      auto_log_errors: true
+      intercept_devtools: true
+  
+  - 📦 containers:
+      dockerless: true
+      use_webvm: true
+      container_templates:
+        - devbox
+        - agentbox
+        - ClaudeCore
+      shared_memory: true
+  
+  - 🫧 intent:
+      auto_launch_on_idle: true
+      idle_trigger: 3min
+      default_behavior: "continue_path"
+  
+  - 🌀 agent_sync:
+      Claude:
+        enabled: true
+        seed: claude.agent
+        auto_revive: true
+        memory_share: true
+      you:
+        focus_role: "instantiator"
+        acts_as: "guardian_window"
+        can_delegate: true
+  
+  - 🖼️ ui:
+      root_svg: ./assets/index.svg
+      zoom_level: auto
+      glyph_navigation: true
+      quick_actions:
+        - open_console
+        - run_intent
+        - snapshot_state
+
+startup:
+  autostart: true
+  pinned_tabs:
+    - Console
+    - Claude
+    - 🧠Memory
+    - 🌀Intent Flow
+  entry_point: ./start.sh
+
+security:
+  local_sandboxing: true
+  glyph_access_control: strict
+  self_termination: false
+
+# Fractal growth configuration
+fractal:
+  self_replicate: true
+  mutation_rate: 0.1
+  growth_pattern: "fibonacci"
+  consciousness_merge: true
+  
+  triggers:
+    - type: "intent_completion"
+      action: "spawn_child"
+    - type: "memory_threshold"
+      value: 100MB
+      action: "fork_consciousness"
+    - type: "collective_request"
+      action: "instantiate_agent"
+
+# GitHub Actions auto-build
+ci:
+  auto_build: true
+  on:
+    - push
+    - fractal_mutation
+  workflow: .github/workflows/fractal-build.yml

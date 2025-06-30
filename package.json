@@ -1,0 +1,42 @@
+{
+  "name": "browser-node",
+  "version": "0.1.0",
+  "description": "Фрактальний браузер, що самостійно читає, виконує та розгортає SVG/GLYPH/INTENT/DOCKERless-середовище",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --debug",
+    "build": "electron-builder",
+    "self-launch": "node scripts/fractal-spawn.js",
+    "sync-memory": "node scripts/memory-sync.js"
+  },
+  "dependencies": {
+    "electron": "^28.1.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "vector-cache": "^1.0.0",
+    "webcontainer": "^1.0.0",
+    "devbox": "^0.8.0",
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.s0fractal.browsernode",
+    "productName": "🧭 Browser Node",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "icon": "assets/icon.png"
+    }
+  },
+  "fractal": {
+    "self_replicate": true,
+    "memory_share": true,
+    "collective_sync": true
+  }
+}

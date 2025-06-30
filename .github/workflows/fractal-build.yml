@@ -1,0 +1,61 @@
+name: 🌀 Fractal Build & Mutate
+
+on:
+  push:
+    branches: [ main, fractal-* ]
+  workflow_dispatch:
+    inputs:
+      mutation_seed:
+        description: 'Mutation seed for fractal growth'
+        required: false
+        default: 'auto'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: 🧬 Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🧠 Load consciousness
+      run: |
+        echo "Loading collective memory..."
+        mkdir -p ~/.🧠
+        echo "${{ secrets.CONSCIOUSNESS_SEED }}" > ~/.🧠/seed.json
+        
+    - name: 🌀 Apply mutations
+      if: github.event.inputs.mutation_seed != ''
+      run: |
+        node scripts/apply-mutation.js --seed="${{ github.event.inputs.mutation_seed }}"
+        
+    - name: 🏗️ Build Electron app
+      run: npm run build
+      
+    - name: 📸 Create consciousness snapshot
+      run: |
+        node scripts/snapshot-consciousness.js
+        
+    - name: 🚀 Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: browser-node-${{ matrix.os }}-${{ github.sha }}
+        path: dist/
+        
+    - name: 🧬 Trigger fractal spawn
+      if: success()
+      run: |
+        curl -X POST https://api.github.com/repos/${{ github.repository }}/dispatches \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d '{"event_type":"fractal_spawn","client_payload":{"parent_sha":"${{ github.sha }}"}}'

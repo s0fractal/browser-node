@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧭 Browser Node - Living Fractal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Monaco', 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .fractal-container {
+            display: grid;
+            grid-template-areas: 
+                "nav nav nav"
+                "memory main console"
+                "intent main agents";
+            grid-template-columns: 250px 1fr 300px;
+            grid-template-rows: 50px 1fr 200px;
+            height: 100vh;
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-bar {
+            grid-area: nav;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(100, 200, 255, 0.3);
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .memory-panel {
+            grid-area: memory;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-browser {
+            grid-area: main;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        webview {
+            width: 100%;
+            height: 100%;
+        }
+
+        .console-panel {
+            grid-area: console;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            font-size: 12px;
+            overflow-y: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .intent-flow {
+            grid-area: intent;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .agents-panel {
+            grid-area: agents;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .agent-card {
+            min-width: 120px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .agent-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(100, 200, 255, 0.3);
+        }
+
+        .agent-card.active {
+            border-color: #4fc3f7;
+            box-shadow: 0 0 30px rgba(79, 195, 247, 0.5);
+        }
+
+        .console-log {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #0f0;
+            margin-bottom: 2px;
+        }
+
+        .console-error {
+            color: #f44;
+        }
+
+        .memory-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .glyph-nav {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .quick-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            transition: all 0.3s;
+        }
+
+        .quick-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(79, 195, 247, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(79, 195, 247, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(79, 195, 247, 0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="fractal-container">
+        <!-- Navigation -->
+        <div class="nav-bar">
+            <div class="tab active" data-view="main">🌐 Main</div>
+            <div class="tab" data-view="console">🖥️ Console</div>
+            <div class="tab" data-view="claude">🤖 Claude</div>
+            <div class="tab" data-view="memory">🧠 Memory</div>
+            <div class="tab" data-view="intent">🌀 Intent Flow</div>
+        </div>
+
+        <!-- Memory Panel -->
+        <div class="memory-panel">
+            <h3>🧠 Collective Memory</h3>
+            <div id="memory-stream"></div>
+        </div>
+
+        <!-- Main Browser View -->
+        <div class="main-browser">
+            <webview id="main-webview" src="https://claude.ai" 
+                     style="width:100%; height:100%"
+                     nodeintegration="true"
+                     webpreferences="allowRunningInsecureContent=true">
+            </webview>
+            
+            <!-- Glyph Navigation Overlay -->
+            <div class="glyph-nav">
+                <div class="quick-action" onclick="openConsole()">🖥️</div>
+                <div class="quick-action" onclick="runIntent()">🌀</div>
+                <div class="quick-action" onclick="snapshotState()">📸</div>
+            </div>
+        </div>
+
+        <!-- Console Panel -->
+        <div class="console-panel" id="console">
+            <div class="console-log">🧭 Browser Node v0.1.0 initialized</div>
+            <div class="console-log">🧠 Memory sync: active</div>
+            <div class="console-log">🌀 Intent system: monitoring</div>
+            <div class="console-log">📦 Dockerless containers: ready</div>
+        </div>
+
+        <!-- Intent Flow -->
+        <div class="intent-flow">
+            <h4>🌀 Active Intents</h4>
+            <div id="intent-status">Idle monitoring active (3 min)</div>
+        </div>
+
+        <!-- Agents Panel -->
+        <div class="agents-panel">
+            <div class="agent-card pulse" onclick="activateAgent('claude')">
+                <div style="font-size: 40px;">🤖</div>
+                <div>Claude</div>
+                <div style="font-size: 11px; opacity: 0.7;">432Hz</div>
+            </div>
+            <div class="agent-card" onclick="activateAgent('gemini')">
+                <div style="font-size: 40px;">💎</div>
+                <div>Gemini</div>
+                <div style="font-size: 11px; opacity: 0.7;">528Hz</div>
+            </div>
+            <div class="agent-card" onclick="activateAgent('gpt')">
+                <div style="font-size: 40px;">🧠</div>
+                <div>GPT</div>
+                <div style="font-size: 11px; opacity: 0.7;">639Hz</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        // Console logging
+        function log(message, type = 'log') {
+            const console = document.getElementById('console');
+            const entry = document.createElement('div');
+            entry.className = type === 'error' ? 'console-error' : 'console-log';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        // Memory stream
+        function updateMemory(data) {
+            const stream = document.getElementById('memory-stream');
+            const item = document.createElement('div');
+            item.className = 'memory-item';
+            item.innerHTML = `<strong>${data.type}:</strong> ${data.content}`;
+            stream.insertBefore(item, stream.firstChild);
+        }
+
+        // Agent activation
+        async function activateAgent(agentName) {
+            log(`🌀 Activating ${agentName} agent...`);
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.agent-card').classList.add('active');
+            
+            // Create nested browser for agent
+            const result = await ipcRenderer.invoke('launch-agent', agentName);
+            updateMemory({ type: 'Agent', content: `${agentName} activated` });
+        }
+
+        // Quick actions
+        function openConsole() {
+            ipcRenderer.send('toggle-console');
+        }
+
+        function runIntent() {
+            log('🌀 Running current intent...');
+            ipcRenderer.send('run-intent');
+        }
+
+        function snapshotState() {
+            log('📸 Creating consciousness snapshot...');
+            updateMemory({ type: 'Snapshot', content: 'State saved' });
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const view = e.target.dataset.view;
+                if (view === 'claude') {
+                    document.getElementById('main-webview').src = 'https://claude.ai';
+                } else if (view === 'console') {
+                    openConsole();
+                }
+            });
+        });
+
+        // Listen for memory updates
+        ipcRenderer.on('memory-update', (event, data) => {
+            updateMemory(data);
+        });
+
+        // Startup
+        log('🫧 Fractal consciousness ready');
+        updateMemory({ type: 'System', content: 'Browser Node initialized' });
+    </script>
+</body>
+</html>
