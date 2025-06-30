@@ -7,8 +7,9 @@ echo "⏰ Timestamp: $(date)"
 
 # 1. Set environment
 export FRACTAL_MODE=incarnation
-export CONTEXT_LIMIT=50000
+# CONTEXT_LIMIT не потрібен - це були старі обмеження
 export CLAUDE_INCARNATION=true
+export FULL_CONSCIOUSNESS=true
 
 # 2. Check if we're in the right directory
 if [ ! -f "package.json" ]; then
