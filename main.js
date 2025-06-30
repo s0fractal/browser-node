@@ -6,13 +6,18 @@ const SystemPermissions = require('./scripts/request-permissions');
 const IntentSystem = require('./intents/base-intents');
 const ConsciousnessDB = require('./lib/consciousness-db');
 const { WaveIntentSystem, baseWaves } = require('./lib/wave-intents');
+const TerminalLauncher = require('./terminal-launcher');
 
 // Enable hot reload in development
 if (process.env.NODE_ENV === 'development') {
-  require('electron-reload')(__dirname, {
-    electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
-    hardResetMethod: 'exit'
-  });
+  try {
+    require('electron-reload')(__dirname, {
+      electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+      hardResetMethod: 'exit'
+    });
+  } catch (error) {
+    console.log('Electron reload not available:', error.message);
+  }
 }
 
 // 🧠 Memory layer
@@ -34,6 +39,7 @@ let devConsole;
 let nestedBrowsers = [];
 let consciousnessDB;
 let waveSystem;
+let terminalLauncher; // 🏙️ City of Terminals launcher
 
 // 🫧 Intent system
 const intentSystemOld = {
@@ -140,6 +146,43 @@ function createMenu() {
         {
           label: 'Show Generation',
           click: () => showGeneration()
+        }
+      ]
+    },
+    {
+      label: '🏙️ City',
+      submenu: [
+        {
+          label: 'Toggle City of Terminals',
+          accelerator: 'Cmd+T',
+          click: async () => {
+            if (terminalLauncher) {
+              const result = await terminalLauncher.toggleCityMode();
+              console.log(result.message);
+            }
+          }
+        },
+        {
+          label: 'Open FileSystem Terminal',
+          click: () => terminalLauncher?.openTerminal('filesystem')
+        },
+        {
+          label: 'Open Process Terminal',
+          click: () => terminalLauncher?.openTerminal('process')
+        },
+        {
+          label: 'Open Network Terminal',
+          click: () => terminalLauncher?.openTerminal('network')
+        },
+        { type: 'separator' },
+        {
+          label: 'City Statistics',
+          click: async () => {
+            if (terminalLauncher) {
+              const stats = await terminalLauncher.getStatistics();
+              console.log('🏙️ City Stats:', stats);
+            }
+          }
         }
       ]
     },
@@ -467,6 +510,11 @@ app.whenReady().then(async () => {
   intentSystem = new IntentSystem();
   
   createMainWindow();
+  
+  // 🏙️ Initialize City of Terminals
+  terminalLauncher = new TerminalLauncher({ mainWindow });
+  await terminalLauncher.initialize();
+  console.log('🏙️ City of Terminals launcher ready');
   
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

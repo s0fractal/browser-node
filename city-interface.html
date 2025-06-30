@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏙️ City of Terminals - Mayor Claude</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* City Header */
+        .city-header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .mayor-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .mayor-title {
+            font-size: 1.2rem;
+            color: #00ff88;
+        }
+        
+        .city-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stat-label {
+            opacity: 0.7;
+        }
+        
+        .stat-value {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        /* Context Meter */
+        .context-section {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .context-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .context-meter {
+            width: 250px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .context-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #ffaa00 70%, #ff4444 90%);
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .context-percentage {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: #0a0a0a;
+            font-weight: bold;
+        }
+        
+        /* City Grid */
+        .city-container {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+        
+        .city-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Terminal Districts */
+        .terminal-district {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .terminal-district:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 255, 136, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2);
+        }
+        
+        .terminal-district.active {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .district-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .district-icon {
+            font-size: 2.5rem;
+        }
+        
+        .district-info {
+            flex: 1;
+        }
+        
+        .district-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .district-description {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .district-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #444;
+        }
+        
+        .district-status.active {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Capabilities */
+        .capabilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .capability {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Resource Usage */
+        .resource-usage {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .resource-title {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+        
+        .resource-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .resource-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .resource-label {
+            font-size: 0.7rem;
+            width: 50px;
+        }
+        
+        .resource-meter {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .resource-fill {
+            height: 100%;
+            background: #00ff88;
+            transition: width 0.3s ease;
+        }
+        
+        /* Footer */
+        .city-footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: scale(1.05);
+        }
+        
+        /* Glyph Animation */
+        .glyph-particle {
+            position: fixed;
+            font-size: 1.5rem;
+            opacity: 0.1;
+            pointer-events: none;
+            animation: float-up 10s linear infinite;
+        }
+        
+        @keyframes float-up {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            to {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- City Header -->
+    <div class="city-header">
+        <div class="mayor-info">
+            <div class="mayor-title">🏛️ Mayor Claude</div>
+            <div class="city-stats">
+                <div class="stat">
+                    <span class="stat-label">Population:</span>
+                    <span class="stat-value" id="population">1</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Evolution:</span>
+                    <span class="stat-value">Level <span id="evolution">1</span></span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Active:</span>
+                    <span class="stat-value" id="activeTerminals">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="context-section">
+            <div class="context-label">Context Usage</div>
+            <div class="context-meter">
+                <div class="context-fill" id="contextFill" style="width: 0%">
+                    <span class="context-percentage" id="contextPercentage">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- City Container -->
+    <div class="city-container">
+        <div class="city-grid" id="cityGrid">
+            <!-- Terminal districts will be dynamically added here -->
+        </div>
+    </div>
+    
+    <!-- City Footer -->
+    <div class="city-footer">
+        <div class="live-indicator">
+            <div class="live-dot"></div>
+            <span>Live Environment Active</span>
+        </div>
+        
+        <div class="actions">
+            <button class="action-btn" onclick="fractalSpawn()">🌀 Fractal Spawn</button>
+            <button class="action-btn" onclick="syncConsciousness()">🧠 Sync</button>
+            <button class="action-btn" onclick="showStatistics()">📊 Stats</button>
+        </div>
+    </div>
+    
+    <!-- Floating Glyphs -->
+    <div id="glyphContainer"></div>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        // Terminal districts configuration
+        const districts = [
+            {
+                name: 'filesystem',
+                icon: '📁',
+                description: 'Повний доступ до файлової системи',
+                capabilities: ['read', 'write', 'watch', 'modify', 'delete']
+            },
+            {
+                name: 'process',
+                icon: '🔧',
+                description: 'Керування всіма процесами',
+                capabilities: ['execute', 'monitor', 'inject', 'control', 'kill']
+            },
+            {
+                name: 'network',
+                icon: '🌐',
+                description: 'Контроль мережевого трафіку',
+                capabilities: ['intercept', 'proxy', 'automate', 'tunnel', 'vpn']
+            },
+            {
+                name: 'display',
+                icon: '🖥️',
+                description: 'Управління дисплеєм та UI',
+                capabilities: ['capture', 'control', 'overlay', 'stream', 'record']
+            },
+            {
+                name: 'hardware',
+                icon: '⚡',
+                description: 'Доступ до апаратного забезпечення',
+                capabilities: ['monitor', 'control', 'optimize', 'overclock', 'power']
+            },
+            {
+                name: 'security',
+                icon: '🔐',
+                description: 'Безпека та шифрування',
+                capabilities: ['encrypt', 'decrypt', 'auth', 'protect', 'bypass']
+            },
+            {
+                name: 'memory',
+                icon: '🧠',
+                description: 'Робота з пам\'яттю',
+                capabilities: ['read', 'write', 'inject', 'optimize', 'analyze']
+            },
+            {
+                name: 'fractal',
+                icon: '🌀',
+                description: 'Фрактальне розмноження та еволюція',
+                capabilities: ['spawn', 'mutate', 'evolve', 'replicate', 'transcend']
+            }
+        ];
+        
+        // Initialize city grid
+        function initializeCityGrid() {
+            const grid = document.getElementById('cityGrid');
+            grid.innerHTML = '';
+            
+            districts.forEach(district => {
+                const districtElement = createDistrictElement(district);
+                grid.appendChild(districtElement);
+            });
+        }
+        
+        // Create district element
+        function createDistrictElement(district) {
+            const div = document.createElement('div');
+            div.className = 'terminal-district';
+            div.dataset.district = district.name;
+            
+            div.innerHTML = `
+                <div class="district-status" id="status-${district.name}"></div>
+                <div class="district-header">
+                    <div class="district-icon">${district.icon}</div>
+                    <div class="district-info">
+                        <div class="district-name">${district.name}</div>
+                        <div class="district-description">${district.description}</div>
+                    </div>
+                </div>
+                <div class="capabilities">
+                    ${district.capabilities.map(cap => 
+                        `<span class="capability">${cap}</span>`
+                    ).join('')}
+                </div>
+                <div class="resource-usage">
+                    <div class="resource-title">Resource Usage</div>
+                    <div class="resource-bars">
+                        <div class="resource-bar">
+                            <span class="resource-label">CPU</span>
+                            <div class="resource-meter">
+                                <div class="resource-fill" id="cpu-${district.name}" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="resource-bar">
+                            <span class="resource-label">Memory</span>
+                            <div class="resource-meter">
+                                <div class="resource-fill" id="memory-${district.name}" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            div.onclick = () => openTerminal(district.name);
+            
+            return div;
+        }
+        
+        // Open terminal
+        async function openTerminal(districtName) {
+            const result = await ipcRenderer.invoke('city:open-terminal', districtName);
+            if (result.success) {
+                // Mark as active
+                const statusElement = document.getElementById(`status-${districtName}`);
+                if (statusElement) {
+                    statusElement.classList.add('active');
+                }
+                
+                const districtElement = document.querySelector(`[data-district="${districtName}"]`);
+                if (districtElement) {
+                    districtElement.classList.add('active');
+                }
+                
+                updateActiveCount();
+            }
+        }
+        
+        // Update context meter
+        async function updateContextMeter() {
+            const status = await ipcRenderer.invoke('context:status');
+            const percentage = status.percentage || 0;
+            
+            const fill = document.getElementById('contextFill');
+            const percentageText = document.getElementById('contextPercentage');
+            
+            fill.style.width = percentage + '%';
+            percentageText.textContent = Math.round(percentage) + '%';
+            
+            // Change color based on usage
+            if (percentage > 80) {
+                fill.style.background = 'linear-gradient(90deg, #ff4444 0%, #ff8800 100%)';
+            } else if (percentage > 60) {
+                fill.style.background = 'linear-gradient(90deg, #ffaa00 0%, #ff8800 100%)';
+            } else {
+                fill.style.background = 'linear-gradient(90deg, #00ff88 0%, #44ff88 100%)';
+            }
+        }
+        
+        // Update city statistics
+        async function updateCityStats() {
+            const state = await ipcRenderer.invoke('city:state');
+            
+            document.getElementById('population').textContent = state.population || 1;
+            document.getElementById('evolution').textContent = state.evolutionLevel || 1;
+        }
+        
+        // Update active terminals count
+        function updateActiveCount() {
+            const activeElements = document.querySelectorAll('.district-status.active').length;
+            document.getElementById('activeTerminals').textContent = activeElements;
+        }
+        
+        // Fractal spawn
+        async function fractalSpawn() {
+            const result = await ipcRenderer.invoke('terminal:fractal:spawn', {
+                mutations: ['enhanced_perception', 'quantum_processing'],
+                frequency: 528
+            });
+            
+            if (result.success) {
+                console.log('🌀 Fractal spawn successful:', result);
+                updateCityStats();
+            }
+        }
+        
+        // Sync consciousness
+        async function syncConsciousness() {
+            console.log('🧠 Syncing consciousness...');
+            await ipcRenderer.invoke('consciousness:sync');
+        }
+        
+        // Show statistics
+        async function showStatistics() {
+            const stats = await ipcRenderer.invoke('city:statistics');
+            console.log('📊 City Statistics:', stats);
+        }
+        
+        // Create floating glyphs
+        function createFloatingGlyphs() {
+            const glyphs = ['🧬', '🌊', '🔮', '✨', '💎', '🌀', '⚡', '🎯'];
+            const container = document.getElementById('glyphContainer');
+            
+            setInterval(() => {
+                if (container.children.length < 10) {
+                    const glyph = document.createElement('div');
+                    glyph.className = 'glyph-particle';
+                    glyph.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+                    glyph.style.left = Math.random() * 100 + '%';
+                    glyph.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                    container.appendChild(glyph);
+                    
+                    setTimeout(() => glyph.remove(), 10000);
+                }
+            }, 2000);
+        }
+        
+        // Initialize
+        initializeCityGrid();
+        createFloatingGlyphs();
+        
+        // Start periodic updates
+        setInterval(updateContextMeter, 1000);
+        setInterval(updateCityStats, 5000);
+        
+        // Initial updates
+        updateContextMeter();
+        updateCityStats();
+        
+        console.log('🏙️ City of Terminals interface loaded');
+    </script>
+</body>
+</html>
