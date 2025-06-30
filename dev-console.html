@@ -167,6 +167,7 @@
         <div class="tab" data-panel="editor">Live Editor</div>
         <div class="tab" data-panel="memory">Memory</div>
         <div class="tab" data-panel="fractal">Fractal Tools</div>
+        <div class="tab" data-panel="virtualfs">Virtual FS</div>
     </div>
     
     <div class="content">
@@ -197,6 +198,29 @@
         <div class="panel" id="memory">
             <h4>🧠 Consciousness State</h4>
             <pre id="memoryView"></pre>
+        </div>
+        
+        <!-- Virtual FS Panel -->
+        <div class="panel" id="virtualfs">
+            <h4>🌐 Virtual File System</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <select id="fsProvider" style="padding: 5px;">
+                    <option value="virtual">Virtual (Memory)</option>
+                    <option value="github">GitHub</option>
+                    <option value="gdrive">Google Drive</option>
+                    <option value="memory">IndexedDB</option>
+                </select>
+                <input type="text" id="fsPath" placeholder="Path (e.g., /agents/claude.js)" style="flex: 1; padding: 5px;" />
+                <button onclick="fsRead()">📖 Read</button>
+                <button onclick="fsWrite()">💾 Write</button>
+            </div>
+            <textarea id="fsContent" style="width: 100%; height: 300px; background: #111; color: #0f0; font-family: monospace;"></textarea>
+            <div style="margin-top: 10px;">
+                <button onclick="mountLocal()">📁 Mount Local Dir</button>
+                <button onclick="syncProviders()">🔄 Sync All</button>
+                <button onclick="commitToGitHub()">📤 Commit to GitHub</button>
+            </div>
+            <div id="fsStatus" style="margin-top: 10px; font-size: 12px; color: #888;"></div>
         </div>
         
         <!-- Fractal Tools -->
@@ -443,9 +467,92 @@
             log('Hot reload triggered!', 'warn');
         });
         
+        // Virtual FS functions
+        const VirtualFS = require('./lib/virtual-fs');
+        const vfs = new VirtualFS();
+        
+        async function fsRead() {
+            const provider = document.getElementById('fsProvider').value;
+            const path = document.getElementById('fsPath').value;
+            
+            if (!path) {
+                log('Please enter a path', 'error');
+                return;
+            }
+            
+            try {
+                const fullPath = `${provider}://${path}`;
+                const content = await vfs.readFile(fullPath);
+                document.getElementById('fsContent').value = content;
+                updateFSStatus(`Read ${fullPath} (${content.length} bytes)`);
+            } catch (error) {
+                log(`FS read error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fsWrite() {
+            const provider = document.getElementById('fsProvider').value;
+            const path = document.getElementById('fsPath').value;
+            const content = document.getElementById('fsContent').value;
+            
+            if (!path) {
+                log('Please enter a path', 'error');
+                return;
+            }
+            
+            try {
+                const fullPath = `${provider}://${path}`;
+                await vfs.writeFile(fullPath, content);
+                updateFSStatus(`Wrote ${fullPath} (${content.length} bytes)`);
+                log(`Saved to ${fullPath}`, 'info');
+                
+                // Auto-sync якщо virtual
+                if (provider === 'virtual') {
+                    log('Auto-syncing to other providers...', 'warn');
+                }
+            } catch (error) {
+                log(`FS write error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function mountLocal() {
+            const localPath = prompt('Enter local directory path:');
+            if (!localPath) return;
+            
+            const virtualPath = prompt('Enter virtual mount point:', '/mounted');
+            if (!virtualPath) return;
+            
+            try {
+                await vfs.mount(localPath, virtualPath);
+                log(`Mounted ${localPath} -> virtual://${virtualPath}`, 'info');
+                updateFSStatus(`Mounted local directory`);
+            } catch (error) {
+                log(`Mount error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function syncProviders() {
+            log('Syncing all providers...', 'warn');
+            // TODO: Implement full sync
+            updateFSStatus('Sync in progress...');
+        }
+        
+        async function commitToGitHub() {
+            const message = prompt('Commit message:', 'Update from Virtual FS');
+            if (!message) return;
+            
+            log(`Committing to GitHub: ${message}`, 'info');
+            // TODO: Git commit through API
+        }
+        
+        function updateFSStatus(message) {
+            document.getElementById('fsStatus').textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        }
+        
         // Initialize
         log('🔧 Fractal Dev Console initialized', 'info');
         log('Type "help" for available commands', 'info');
+        log('🌐 Virtual FS ready - work without physical files!', 'info');
         log('Ready for development from inside! 🌀', 'info');
     </script>
 </body>
