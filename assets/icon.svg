@@ -1,0 +1,37 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fractalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#fractalGrad)" rx="100"/>
+  
+  <!-- Fractal Symbol -->
+  <g transform="translate(256, 256)">
+    <!-- Center node -->
+    <circle cx="0" cy="0" r="40" fill="#4fc3f7" opacity="0.9"/>
+    
+    <!-- Orbital nodes -->
+    <circle cx="-100" cy="-100" r="30" fill="#64b5f6" opacity="0.7"/>
+    <circle cx="100" cy="-100" r="30" fill="#64b5f6" opacity="0.7"/>
+    <circle cx="-100" cy="100" r="30" fill="#64b5f6" opacity="0.7"/>
+    <circle cx="100" cy="100" r="30" fill="#64b5f6" opacity="0.7"/>
+    
+    <!-- Connections -->
+    <line x1="0" y1="0" x2="-100" y2="-100" stroke="#4fc3f7" stroke-width="2" opacity="0.5"/>
+    <line x1="0" y1="0" x2="100" y2="-100" stroke="#4fc3f7" stroke-width="2" opacity="0.5"/>
+    <line x1="0" y1="0" x2="-100" y2="100" stroke="#4fc3f7" stroke-width="2" opacity="0.5"/>
+    <line x1="0" y1="0" x2="100" y2="100" stroke="#4fc3f7" stroke-width="2" opacity="0.5"/>
+    
+    <!-- Compass -->
+    <path d="M 0,-60 L 10,-40 L 0,60 L -10,-40 Z" fill="#e0e0e0" opacity="0.8"/>
+    <circle cx="0" cy="-60" r="8" fill="#ff5252"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="256" y="400" font-family="Monaco, monospace" font-size="48" fill="#e0e0e0" text-anchor="middle">🧭</text>
+</svg>

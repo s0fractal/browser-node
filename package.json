@@ -13,9 +13,6 @@
   "dependencies": {
     "electron": "^28.1.0",
     "@supabase/supabase-js": "^2.39.0",
-    "vector-cache": "^1.0.0",
-    "webcontainer": "^1.0.0",
-    "devbox": "^0.8.0",
     "electron-store": "^8.1.0"
   },
   "devDependencies": {
@@ -23,12 +20,31 @@
   },
   "build": {
     "appId": "com.s0fractal.browsernode",
-    "productName": "🧭 Browser Node",
+    "productName": "Browser Node",
     "directories": {
       "output": "dist"
     },
     "mac": {
-      "icon": "assets/icon.icns"
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
     },
     "linux": {
       "icon": "assets/icon.png"

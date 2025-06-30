@@ -257,7 +257,7 @@
     </div>
 
     <script>
-        const { ipcRenderer } = require('electron');
+        const { electronAPI } = window;
         
         // Console logging
         function log(message, type = 'log') {
@@ -287,18 +287,18 @@
             event.target.closest('.agent-card').classList.add('active');
             
             // Create nested browser for agent
-            const result = await ipcRenderer.invoke('launch-agent', agentName);
+            const result = await electronAPI.launchAgent(agentName);
             updateMemory({ type: 'Agent', content: `${agentName} activated` });
         }
 
         // Quick actions
         function openConsole() {
-            ipcRenderer.send('toggle-console');
+            console.log('Toggle console');
         }
 
         function runIntent() {
             log('🌀 Running current intent...');
-            ipcRenderer.send('run-intent');
+            console.log('Run intent');
         }
 
         function snapshotState() {
@@ -322,7 +322,7 @@
         });
 
         // Listen for memory updates
-        ipcRenderer.on('memory-update', (event, data) => {
+        electronAPI.onMemoryUpdate((event, data) => {
             updateMemory(data);
         });
 
