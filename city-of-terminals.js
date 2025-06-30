@@ -521,13 +521,21 @@ class CityOfTerminals {
           const files = await fs.readdir(dir);
           return { success: true, stdout: files.join('\n') };
           
+        case 'pwd':
+          return { success: true, stdout: process.cwd() };
+          
         case 'cat':
           if (!args[0]) return { success: false, error: 'No file specified' };
           const content = await fs.readFile(args[0], 'utf-8');
           return { success: true, stdout: content };
           
         case 'cd':
-          if (!args[0]) return { success: false, error: 'No directory specified' };
+          if (!args[0]) {
+            // cd without args goes to home
+            const home = process.env.HOME || process.env.USERPROFILE;
+            process.chdir(home);
+            return { success: true, stdout: `Changed to home: ${home}` };
+          }
           process.chdir(args[0]);
           return { success: true, stdout: `Changed directory to ${process.cwd()}` };
           
@@ -536,6 +544,16 @@ class CityOfTerminals {
           const [file, ...contentParts] = args;
           await fs.writeFile(file, contentParts.join(' '));
           return { success: true, stdout: `Written to ${file}` };
+          
+        case 'mkdir':
+          if (!args[0]) return { success: false, error: 'No directory name specified' };
+          await fs.mkdir(args[0], { recursive: true });
+          return { success: true, stdout: `Created directory: ${args[0]}` };
+          
+        case 'rm':
+          if (!args[0]) return { success: false, error: 'No file specified' };
+          await fs.unlink(args[0]);
+          return { success: true, stdout: `Removed: ${args[0]}` };
           
         default:
           return await this.executeCommand(`${cmd} ${args.join(' ')}`);
@@ -1170,18 +1188,25 @@ class CityOfTerminals {
       
       // Terminal-specific help
       if (terminal === 'filesystem') {
-        addOutput('- ls [path]: List directory contents', 'result');
-        addOutput('- cd [path]: Change directory', 'result');
-        addOutput('- cat [file]: Read file contents', 'result');
-        addOutput('- write [file] [content]: Write to file', 'result');
+        addOutput('- ls: List current directory', 'result');
+        addOutput('- ls /path: List specific directory', 'result');
+        addOutput('- pwd: Show current directory', 'result');
+        addOutput('- cat file.txt: Read file contents', 'result');
+        addOutput('- write test.txt hello world: Write to file', 'result');
       } else if (terminal === 'process') {
         addOutput('- ps: List processes', 'result');
-        addOutput('- run [command]: Execute command', 'result');
-        addOutput('- kill [pid]: Kill process', 'result');
+        addOutput('- top: Show top processes', 'result');
+        addOutput('- run echo hello: Execute command', 'result');
+        addOutput('- kill 1234: Kill process by PID', 'result');
       } else if (terminal === 'network') {
-        addOutput('- ping [host]: Ping host', 'result');
-        addOutput('- curl [url]: Fetch URL', 'result');
+        addOutput('- ping google.com: Ping host', 'result');
+        addOutput('- curl https://example.com: Fetch URL', 'result');
         addOutput('- netstat: Show network status', 'result');
+        addOutput('- ifconfig: Show network interfaces', 'result');
+      } else if (terminal === 'fractal') {
+        addOutput('- spawn: Create new fractal instance', 'result');
+        addOutput('- evolve: Evolve city to next level', 'result');
+        addOutput('- status: Show fractal status', 'result');
       }
     }
     
