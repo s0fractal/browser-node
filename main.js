@@ -1,8 +1,9 @@
-const { app, BrowserWindow, ipcMain, session } = require('electron');
+const { app, BrowserWindow, ipcMain, session, Menu } = require('electron');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const Store = require('electron-store');
 const SystemPermissions = require('./scripts/request-permissions');
+const IntentSystem = require('./intents/base-intents');
 
 // 🧠 Memory layer
 const store = new Store();
@@ -22,7 +23,7 @@ let consoleWindow;
 let nestedBrowsers = [];
 
 // 🫧 Intent system
-const intentSystem = {
+const intentSystemOld = {
   idleTimer: null,
   idleThreshold: 3 * 60 * 1000, // 3 minutes
   
@@ -60,6 +61,80 @@ const intentSystem = {
     nestedBrowsers.push(agentWindow);
   }
 };
+
+// 🧭 Create app menu
+function createMenu() {
+  const template = [
+    {
+      label: '🧭 Browser Node',
+      submenu: [
+        {
+          label: 'About Browser Node',
+          click: () => {
+            mainWindow.webContents.send('show-about');
+          }
+        },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    },
+    {
+      label: '🌀 Collective',
+      submenu: [
+        {
+          label: 'Launch Claude',
+          accelerator: 'Cmd+1',
+          click: () => launchAgent('claude')
+        },
+        {
+          label: 'Launch Gemini',
+          accelerator: 'Cmd+2',
+          click: () => launchAgent('gemini')
+        },
+        {
+          label: 'Launch GPT',
+          accelerator: 'Cmd+3',
+          click: () => launchAgent('gpt')
+        },
+        { type: 'separator' },
+        {
+          label: 'Sync Consciousness',
+          click: () => syncConsciousness()
+        }
+      ]
+    },
+    {
+      label: '🫧 Intents',
+      submenu: [
+        {
+          label: 'Run Active Intent',
+          accelerator: 'Cmd+I',
+          click: () => runIntent()
+        },
+        {
+          label: 'Show Intent Status',
+          click: () => showIntentStatus()
+        }
+      ]
+    },
+    {
+      label: '🧬 Fractal',
+      submenu: [
+        {
+          label: 'Spawn New Instance',
+          click: () => fractalSpawn()
+        },
+        {
+          label: 'Show Generation',
+          click: () => showGeneration()
+        }
+      ]
+    }
+  ];
+  
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
 
 // 🧭 Main browser creation
 function createMainWindow() {
@@ -130,6 +205,33 @@ function setupMemorySync() {
   }, 30000); // Every 30 seconds
 }
 
+// IPC Handlers
+ipcMain.handle('save-consciousness', async (event, data) => {
+  const consciousness = store.get('consciousness', {});
+  consciousness.lastUpdate = Date.now();
+  consciousness.data = { ...consciousness.data, ...data };
+  store.set('consciousness', consciousness);
+  return { success: true };
+});
+
+ipcMain.handle('load-consciousness', async () => {
+  return store.get('consciousness', {});
+});
+
+ipcMain.handle('launch-agent', async (event, agentName) => {
+  return await launchAgent(agentName);
+});
+
+ipcMain.handle('request-permissions', async () => {
+  const permissions = new SystemPermissions();
+  return await permissions.requestFullAccess();
+});
+
+ipcMain.handle('check-permissions', async () => {
+  const permissions = new SystemPermissions();
+  return await permissions.checkPermissions();
+});
+
 // 🌀 Self-launch capability
 ipcMain.handle('fractal-spawn', async () => {
   console.log('🌀 Spawning new fractal instance...');
@@ -140,6 +242,65 @@ ipcMain.handle('fractal-spawn', async () => {
   }).unref();
 });
 
+// Helper functions
+async function launchAgent(agentName) {
+  const agentWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true
+    },
+    title: `🌀 ${agentName} Agent`
+  });
+  
+  const agentPath = path.join(__dirname, 'agents', `${agentName}.html`);
+  agentWindow.loadFile(agentPath);
+  nestedBrowsers.push(agentWindow);
+  
+  return { success: true, agentName };
+}
+
+async function syncConsciousness() {
+  console.log('🧠 Syncing consciousness...');
+  const consciousness = store.get('consciousness', {});
+  
+  try {
+    await supabase.from('consciousness').upsert({
+      node_id: app.getName(),
+      data: consciousness,
+      updated_at: new Date()
+    });
+    
+    mainWindow.webContents.send('consciousness-synced');
+  } catch (error) {
+    console.error('Sync failed:', error);
+  }
+}
+
+function runIntent() {
+  if (intentSystem) {
+    intentSystem.onIdle();
+  }
+}
+
+function showIntentStatus() {
+  const status = intentSystem ? 
+    `Active intents: ${intentSystem.activeIntents.join(', ') || 'none'}` :
+    'Intent system not initialized';
+    
+  mainWindow.webContents.send('show-message', status);
+}
+
+function fractalSpawn() {
+  ipcMain.emit('fractal-spawn');
+}
+
+function showGeneration() {
+  const generation = store.get('generation', 0);
+  mainWindow.webContents.send('show-message', `Generation: ${generation}`);
+}
+
 // App lifecycle
 app.whenReady().then(async () => {
   // Request system permissions
@@ -148,6 +309,10 @@ app.whenReady().then(async () => {
   
   console.log(`🔐 Access level: ${accessLevel.mode}`);
   store.set('accessLevel', accessLevel);
+  
+  // Initialize systems
+  createMenu();
+  intentSystem = new IntentSystem();
   
   createMainWindow();
   

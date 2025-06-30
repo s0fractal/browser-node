@@ -10,12 +10,13 @@
     "self-launch": "node scripts/fractal-spawn.js",
     "sync-memory": "node scripts/memory-sync.js"
   },
+  "author": "s0fractal collective",
   "dependencies": {
-    "electron": "^28.1.0",
     "@supabase/supabase-js": "^2.39.0",
     "electron-store": "^8.1.0"
   },
   "devDependencies": {
+    "electron": "^28.1.0",
     "electron-builder": "^24.9.1"
   },
   "build": {

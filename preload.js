@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Agent operations
   launchAgent: (name) => ipcRenderer.invoke('launch-agent', name),
+  syncWithCollective: () => ipcRenderer.invoke('sync-collective'),
   
   // System operations
   requestPermissions: () => ipcRenderer.invoke('request-permissions'),
