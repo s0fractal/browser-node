@@ -4,6 +4,16 @@ const { createClient } = require('@supabase/supabase-js');
 const Store = require('electron-store');
 const SystemPermissions = require('./scripts/request-permissions');
 const IntentSystem = require('./intents/base-intents');
+const ConsciousnessDB = require('./lib/consciousness-db');
+const { WaveIntentSystem, baseWaves } = require('./lib/wave-intents');
+
+// Enable hot reload in development
+if (process.env.NODE_ENV === 'development') {
+  require('electron-reload')(__dirname, {
+    electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
+    hardResetMethod: 'exit'
+  });
+}
 
 // 🧠 Memory layer
 const store = new Store();
@@ -20,7 +30,10 @@ const supabase = createClient(
 
 let mainWindow;
 let consoleWindow;
+let devConsole;
 let nestedBrowsers = [];
+let consciousnessDB;
+let waveSystem;
 
 // 🫧 Intent system
 const intentSystemOld = {
@@ -129,6 +142,43 @@ function createMenu() {
           click: () => showGeneration()
         }
       ]
+    },
+    {
+      label: '🔧 Developer',
+      submenu: [
+        {
+          label: 'Open Dev Console',
+          accelerator: 'Cmd+Shift+D',
+          click: () => {
+            if (!devConsole || devConsole.isDestroyed()) {
+              createDevConsole();
+            } else {
+              devConsole.show();
+            }
+          }
+        },
+        {
+          label: 'Toggle System Console',
+          accelerator: 'Cmd+Shift+C',
+          click: () => {
+            mainWindow.webContents.send('toggle-console');
+          }
+        },
+        {
+          label: 'Reload',
+          accelerator: 'Cmd+R',
+          click: () => {
+            mainWindow.reload();
+          }
+        },
+        {
+          label: 'Toggle DevTools',
+          accelerator: 'Cmd+Option+I',
+          click: () => {
+            mainWindow.webContents.toggleDevTools();
+          }
+        }
+      ]
     }
   ];
   
@@ -159,7 +209,7 @@ function createMainWindow() {
     width: 600,
     height: 400,
     parent: mainWindow,
-    show: false,
+    show: true, // Changed to true for dev mode
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -170,13 +220,36 @@ function createMainWindow() {
   consoleWindow.loadFile('console.html');
 
   // Setup intent tracking
-  intentSystem.startIdleTracking();
+  intentSystemOld.startIdleTracking();
 
   // 📦 Container management
   setupDockerlessEnvironment();
   
   // 🧠 Memory sync
   setupMemorySync();
+  
+  // 🔧 Dev console in development mode
+  if (process.env.NODE_ENV === 'development' || process.argv.includes('--internal-dev')) {
+    createDevConsole();
+  }
+}
+
+// 🔧 Create development console
+function createDevConsole() {
+  devConsole = new BrowserWindow({
+    width: 1000,
+    height: 600,
+    x: 50,
+    y: 50,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    title: '🔧 Fractal Dev Console'
+  });
+  
+  devConsole.loadFile('dev-console.html');
+  devConsole.webContents.openDevTools();
 }
 
 // 📦 Dockerless containers via WebVM
@@ -205,6 +278,53 @@ function setupMemorySync() {
   }, 30000); // Every 30 seconds
 }
 
+// UI IPC Handlers
+ipcMain.on('toggle-console', () => {
+  if (consoleWindow) {
+    if (consoleWindow.isVisible()) {
+      consoleWindow.hide();
+    } else {
+      consoleWindow.show();
+    }
+  }
+});
+
+// Dev IPC Handlers
+ipcMain.on('dev-reload', () => {
+  console.log('🔄 Hot reloading...');
+  mainWindow.reload();
+  if (devConsole) devConsole.reload();
+});
+
+ipcMain.on('apply-mutation', (event, { type }) => {
+  console.log(`🧬 Applying ${type} mutation...`);
+  // Implement mutation logic
+  const mutations = {
+    random: () => {
+      // Random UI change
+      mainWindow.webContents.executeJavaScript(`
+        document.body.style.filter = 'hue-rotate(${Math.random() * 360}deg)';
+      `);
+    },
+    performance: () => {
+      // Optimize something
+      store.set('optimized', true);
+    },
+    feature: () => {
+      // Add new feature
+      mainWindow.webContents.send('new-feature', { type: 'voice' });
+    }
+  };
+  
+  if (mutations[type]) {
+    mutations[type]();
+  }
+});
+
+ipcMain.handle('get-consciousness', async () => {
+  return store.get('consciousness', {});
+});
+
 // IPC Handlers
 ipcMain.handle('save-consciousness', async (event, data) => {
   const consciousness = store.get('consciousness', {});
@@ -230,6 +350,38 @@ ipcMain.handle('request-permissions', async () => {
 ipcMain.handle('check-permissions', async () => {
   const permissions = new SystemPermissions();
   return await permissions.checkPermissions();
+});
+
+// Consciousness DB handlers
+ipcMain.handle('init-consciousness-db', async () => {
+  consciousnessDB = new ConsciousnessDB();
+  await consciousnessDB.init();
+  
+  // Ініціалізувати Wave System
+  waveSystem = new WaveIntentSystem(consciousnessDB.db);
+  
+  // Завантажити базові хвилі
+  for (const wave of baseWaves) {
+    await waveSystem.createWave(wave);
+  }
+  
+  console.log('🌊 Wave Intent System initialized with', baseWaves.length, 'base waves');
+  return true;
+});
+
+ipcMain.handle('load-intent-strategy', async () => {
+  if (!consciousnessDB) return {};
+  return await consciousnessDB.loadIntentStrategy();
+});
+
+ipcMain.handle('import-browser-data', async () => {
+  if (!consciousnessDB) return 0;
+  return await consciousnessDB.importBrowserData();
+});
+
+ipcMain.handle('get-mindmap-data', async () => {
+  if (!consciousnessDB) return { name: 'Empty' };
+  return await consciousnessDB.generateMindmap();
 });
 
 // 🌀 Self-launch capability

@@ -19,5 +19,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Event listeners
   onMemoryUpdate: (callback) => ipcRenderer.on('memory-update', callback),
-  onIntentTrigger: (callback) => ipcRenderer.on('intent-trigger', callback)
+  onIntentTrigger: (callback) => ipcRenderer.on('intent-trigger', callback),
+  
+  // Consciousness DB
+  initConsciousnessDB: () => ipcRenderer.invoke('init-consciousness-db'),
+  loadIntentStrategy: () => ipcRenderer.invoke('load-intent-strategy'),
+  importBrowserData: () => ipcRenderer.invoke('import-browser-data'),
+  getMindmapData: () => ipcRenderer.invoke('get-mindmap-data')
 });

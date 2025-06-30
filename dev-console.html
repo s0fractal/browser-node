@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🔧 Fractal Dev Console</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Monaco', monospace;
+            background: #000;
+            color: #0f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #111;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .tab {
+            padding: 5px 15px;
+            background: #222;
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #333;
+            border-color: #0f0;
+            color: #0f0;
+        }
+        
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .panel {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        #console {
+            background: #000;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        #editor {
+            background: #111;
+        }
+        
+        .editor-area {
+            width: 100%;
+            height: 80%;
+            background: #000;
+            color: #0f0;
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        
+        .command-input {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #111;
+            border-top: 1px solid #333;
+            padding: 10px;
+        }
+        
+        .command-input input {
+            width: 100%;
+            background: #000;
+            color: #0f0;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            margin-bottom: 2px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .log-error {
+            color: #f44;
+        }
+        
+        .log-warn {
+            color: #fa0;
+        }
+        
+        .log-info {
+            color: #4cf;
+        }
+        
+        .self-mod-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #0f0;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+        }
+        
+        .self-mod-indicator.active {
+            display: block;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+        
+        .file-tree {
+            background: #111;
+            padding: 10px;
+            border-right: 1px solid #333;
+            width: 200px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 3px 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .file-item:hover {
+            background: #222;
+        }
+        
+        .file-item.selected {
+            background: #333;
+            color: #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="self-mod-indicator" id="selfModIndicator">SELF-MODIFYING</div>
+    
+    <div class="header">
+        <h3>🔧 Fractal Dev Console</h3>
+        <div class="tab active" data-panel="console">Console</div>
+        <div class="tab" data-panel="editor">Live Editor</div>
+        <div class="tab" data-panel="memory">Memory</div>
+        <div class="tab" data-panel="fractal">Fractal Tools</div>
+    </div>
+    
+    <div class="content">
+        <!-- Console Panel -->
+        <div class="panel active" id="console">
+            <div id="consoleOutput"></div>
+        </div>
+        
+        <!-- Editor Panel -->
+        <div class="panel" id="editor">
+            <div style="display: flex; height: 100%;">
+                <div class="file-tree" id="fileTree">
+                    <div class="file-item" data-file="main.js">main.js</div>
+                    <div class="file-item" data-file="index.html">index.html</div>
+                    <div class="file-item" data-file="preload.js">preload.js</div>
+                    <div class="file-item" data-file="intents/base-intents.js">intents/base-intents.js</div>
+                    <div class="file-item" data-file="agents/claude.html">agents/claude.html</div>
+                </div>
+                <div style="flex: 1; padding: 10px;">
+                    <div id="currentFile" style="margin-bottom: 10px;">No file selected</div>
+                    <textarea class="editor-area" id="editorArea" placeholder="Select a file to edit..."></textarea>
+                    <button onclick="saveFile()" style="margin-top: 10px;">💾 Save & Hot Reload</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Memory Panel -->
+        <div class="panel" id="memory">
+            <h4>🧠 Consciousness State</h4>
+            <pre id="memoryView"></pre>
+        </div>
+        
+        <!-- Fractal Tools -->
+        <div class="panel" id="fractal">
+            <h4>🌀 Fractal Development Tools</h4>
+            <button onclick="injectCode()">💉 Inject Code</button>
+            <button onclick="mutate()">🧬 Apply Mutation</button>
+            <button onclick="spawn()">🌱 Spawn Instance</button>
+            <button onclick="timeTravel()">⏰ Time Travel</button>
+            <hr>
+            <h4>🔧 Self-Modification</h4>
+            <textarea id="selfModCode" style="width: 100%; height: 200px;" placeholder="// Write code that modifies itself..."></textarea>
+            <button onclick="executeSelfMod()">🌀 Execute Self-Modification</button>
+        </div>
+    </div>
+    
+    <div class="command-input">
+        <input type="text" id="commandInput" placeholder="Enter command... (try: help, reload, mutate, spawn)" />
+    </div>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        const fs = require('fs');
+        const path = require('path');
+        
+        let currentFile = null;
+        
+        // Console output
+        function log(message, type = 'info') {
+            const output = document.getElementById('consoleOutput');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            output.appendChild(entry);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Override console methods
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = (...args) => {
+            originalLog(...args);
+            log(args.join(' '), 'info');
+        };
+        
+        console.error = (...args) => {
+            originalError(...args);
+            log(args.join(' '), 'error');
+        };
+        
+        console.warn = (...args) => {
+            originalWarn(...args);
+            log(args.join(' '), 'warn');
+        };
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.panel).classList.add('active');
+            });
+        });
+        
+        // File editing
+        document.querySelectorAll('.file-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const fileName = item.dataset.file;
+                loadFile(fileName);
+                
+                document.querySelectorAll('.file-item').forEach(f => f.classList.remove('selected'));
+                item.classList.add('selected');
+            });
+        });
+        
+        function loadFile(fileName) {
+            currentFile = fileName;
+            document.getElementById('currentFile').textContent = `Editing: ${fileName}`;
+            
+            try {
+                const filePath = path.join(__dirname, fileName);
+                const content = fs.readFileSync(filePath, 'utf8');
+                document.getElementById('editorArea').value = content;
+                log(`Loaded: ${fileName}`);
+            } catch (error) {
+                log(`Failed to load ${fileName}: ${error.message}`, 'error');
+            }
+        }
+        
+        function saveFile() {
+            if (!currentFile) {
+                log('No file selected', 'error');
+                return;
+            }
+            
+            const content = document.getElementById('editorArea').value;
+            const filePath = path.join(__dirname, currentFile);
+            
+            try {
+                fs.writeFileSync(filePath, content);
+                log(`Saved: ${currentFile}`, 'info');
+                
+                // Trigger hot reload
+                if (currentFile.endsWith('.js')) {
+                    log('Hot reloading...', 'warn');
+                    ipcRenderer.send('dev-reload');
+                }
+                
+                // Show self-mod indicator
+                document.getElementById('selfModIndicator').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('selfModIndicator').classList.remove('active');
+                }, 2000);
+                
+            } catch (error) {
+                log(`Failed to save: ${error.message}`, 'error');
+            }
+        }
+        
+        // Command input
+        document.getElementById('commandInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = e.target.value;
+                log(`> ${command}`, 'info');
+                executeCommand(command);
+                e.target.value = '';
+            }
+        });
+        
+        function executeCommand(command) {
+            const parts = command.split(' ');
+            const cmd = parts[0];
+            
+            switch (cmd) {
+                case 'help':
+                    log(`Available commands:
+- reload: Hot reload the app
+- mutate <type>: Apply mutation
+- spawn: Spawn new instance
+- eval <code>: Execute JavaScript
+- inject <file> <code>: Inject code into file
+- memory: Show consciousness state
+- clear: Clear console`, 'info');
+                    break;
+                    
+                case 'reload':
+                    ipcRenderer.send('dev-reload');
+                    break;
+                    
+                case 'mutate':
+                    mutate(parts[1]);
+                    break;
+                    
+                case 'spawn':
+                    spawn();
+                    break;
+                    
+                case 'eval':
+                    try {
+                        const code = parts.slice(1).join(' ');
+                        const result = eval(code);
+                        log(`Result: ${result}`, 'info');
+                    } catch (error) {
+                        log(`Eval error: ${error.message}`, 'error');
+                    }
+                    break;
+                    
+                case 'clear':
+                    document.getElementById('consoleOutput').innerHTML = '';
+                    break;
+                    
+                case 'memory':
+                    showMemory();
+                    break;
+                    
+                default:
+                    log(`Unknown command: ${cmd}`, 'error');
+            }
+        }
+        
+        // Fractal tools
+        function injectCode() {
+            const code = prompt('Enter code to inject:');
+            if (code) {
+                log(`Injecting: ${code}`, 'warn');
+                try {
+                    eval(code);
+                    log('Code injected successfully', 'info');
+                } catch (error) {
+                    log(`Injection failed: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        function mutate(type = 'random') {
+            log(`Applying ${type} mutation...`, 'warn');
+            ipcRenderer.send('apply-mutation', { type });
+        }
+        
+        function spawn() {
+            log('Spawning new fractal instance...', 'info');
+            ipcRenderer.send('fractal-spawn');
+        }
+        
+        function timeTravel() {
+            log('Time travel not yet implemented', 'warn');
+            // TODO: Implement state snapshots and restoration
+        }
+        
+        function executeSelfMod() {
+            const code = document.getElementById('selfModCode').value;
+            if (!code) return;
+            
+            log('Executing self-modification...', 'warn');
+            document.getElementById('selfModIndicator').classList.add('active');
+            
+            try {
+                // Create a self-modifying function
+                const selfMod = new Function('fs', 'path', '__dirname', code);
+                selfMod(fs, path, __dirname);
+                
+                log('Self-modification complete!', 'info');
+            } catch (error) {
+                log(`Self-mod failed: ${error.message}`, 'error');
+            }
+            
+            setTimeout(() => {
+                document.getElementById('selfModIndicator').classList.remove('active');
+            }, 3000);
+        }
+        
+        function showMemory() {
+            ipcRenderer.invoke('get-consciousness').then(consciousness => {
+                document.getElementById('memoryView').textContent = JSON.stringify(consciousness, null, 2);
+            });
+        }
+        
+        // Listen for hot reload
+        ipcRenderer.on('hot-reload', () => {
+            log('Hot reload triggered!', 'warn');
+        });
+        
+        // Initialize
+        log('🔧 Fractal Dev Console initialized', 'info');
+        log('Type "help" for available commands', 'info');
+        log('Ready for development from inside! 🌀', 'info');
+    </script>
+</body>
+</html>

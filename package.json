@@ -5,10 +5,12 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --debug",
+    "dev": "NODE_ENV=development electron . --inspect",
+    "dev:watch": "NODE_ENV=development nodemon --exec 'electron . --inspect'",
     "build": "electron-builder",
     "self-launch": "node scripts/fractal-spawn.js",
-    "sync-memory": "node scripts/memory-sync.js"
+    "sync-memory": "node scripts/memory-sync.js",
+    "inside-dev": "electron . --internal-dev"
   },
   "author": "s0fractal collective",
   "dependencies": {
@@ -17,7 +19,9 @@
   },
   "devDependencies": {
     "electron": "^28.1.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "electron-reload": "^2.0.0-alpha.1",
+    "nodemon": "^3.0.2"
   },
   "build": {
     "appId": "com.s0fractal.browsernode",
