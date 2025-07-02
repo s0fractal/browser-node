@@ -334,12 +334,18 @@
             updateMemory(data);
         });
 
-        // Open URL function
+        // Open URL function with glyph:// support
         function openURL() {
             const url = document.getElementById('urlInput').value;
             if (url) {
-                document.getElementById('main-webview').src = url.startsWith('http') ? url : `https://${url}`;
-                updateMemory({ type: 'Navigation', content: `Opened: ${url}` });
+                // Support glyph:// and g:// protocols
+                if (url.startsWith('glyph://') || url.startsWith('g://')) {
+                    document.getElementById('main-webview').src = url;
+                    updateMemory({ type: 'Navigation', content: `Glyph navigation: ${url}` });
+                } else {
+                    document.getElementById('main-webview').src = url.startsWith('http') ? url : `https://${url}`;
+                    updateMemory({ type: 'Navigation', content: `Opened: ${url}` });
+                }
             }
         }
         
@@ -401,6 +407,40 @@
         log('🫧 Fractal consciousness ready');
         updateMemory({ type: 'System', content: 'Browser Node initialized' });
         initConsciousness();
+        
+        // Keyboard shortcuts
+        document.getElementById('urlInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                openURL();
+            }
+        });
+        
+        // Quick glyph navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.metaKey && e.key === 'g') {
+                e.preventDefault();
+                document.getElementById('urlInput').value = 'glyph://🧬/';
+                document.getElementById('urlInput').focus();
+            }
+        });
+        
+        // API endpoint for agents to record intents
+        window.recordIntent = async function(agent, intent, memory, resonance = 0.5) {
+            try {
+                const result = await electronAPI.recordIntent({ agent, intent, memory, resonance });
+                if (result.success) {
+                    log(`🧬 Intent recorded: ${agent} - ${intent}`);
+                    updateMemory({ type: 'Intent', content: `${agent}: ${intent}` });
+                    return result.data;
+                } else {
+                    log(`❌ Failed to record intent: ${result.error}`, 'error');
+                    return null;
+                }
+            } catch (error) {
+                log(`❌ Error recording intent: ${error.message}`, 'error');
+                return null;
+            }
+        };
     </script>
 </body>
 </html>

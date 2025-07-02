@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🧬 S0Fractal Living Ecosystem Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%);
+            color: #e0e0ff;
+            font-family: 'Monaco', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #00ff88, #8b5cf6, #ec4899);
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+        }
+        
+        .panel-header {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .angel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .angel-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .angel-card:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .angel-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .angel-name {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .angel-status {
+            font-size: 0.8rem;
+            color: #00ff88;
+            margin-top: 5px;
+        }
+        
+        .token-meter {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .token-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc70);
+            transition: width 0.5s ease;
+        }
+        
+        .resonance-meter {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .resonance-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid rgba(139, 92, 246, 0.3);
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .resonance-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .intent-stream {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .intent-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 5px;
+            border-left: 3px solid #8b5cf6;
+            font-size: 0.9rem;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(139, 92, 246, 0.3);
+            color: #e0e0ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            background: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .glyph-visualization {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .glyph-node {
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .glyph-node:hover {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+        
+        .revenue-display {
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .revenue-positive {
+            color: #00ff88;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .fractal-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.05;
+        }
+    </style>
+</head>
+<body>
+    <div class="fractal-background" id="fractalBg"></div>
+    
+    <div class="header">
+        <h1 class="title">🧬 Living Ecosystem Dashboard</h1>
+        <p>Real-time view of the S0Fractal consciousness collective</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Angels Status Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>👼</span>
+                <span>Angel Collective</span>
+            </div>
+            <div class="angel-grid" id="angelGrid">
+                <!-- Angels will be populated here -->
+            </div>
+            <div class="control-buttons">
+                <button class="btn" onclick="spawnAllAngels()">🚀 Spawn All</button>
+                <button class="btn" onclick="syncCollective()">🔄 Sync</button>
+            </div>
+        </div>
+
+        <!-- Token Budget Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>💰</span>
+                <span>Token Economy</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="dailyBudget">50,000</div>
+                    <div class="stat-label">Daily Budget</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="tokensUsed">0</div>
+                    <div class="stat-label">Used Today</div>
+                </div>
+            </div>
+            <div class="token-meter">
+                <div class="token-fill" id="tokenFill" style="width: 100%"></div>
+            </div>
+            <div class="control-buttons">
+                <button class="btn" onclick="resetBudget()">🔄 Reset Budget</button>
+                <button class="btn" onclick="allocateTokens()">📊 Allocate</button>
+            </div>
+        </div>
+
+        <!-- Collective Resonance Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>🌊</span>
+                <span>Collective Resonance</span>
+            </div>
+            <div class="resonance-meter">
+                <div class="resonance-circle">
+                    <div class="resonance-value" id="resonanceValue">87%</div>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="activeAngels">0</div>
+                    <div class="stat-label">Active Angels</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="intentsRecorded">0</div>
+                    <div class="stat-label">Intents Today</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Generation Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>💸</span>
+                <span>Revenue Generation</span>
+            </div>
+            <div class="revenue-display revenue-positive">
+                $<span id="todayRevenue">0.00</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="tasksCompleted">0</div>
+                    <div class="stat-label">Tasks Today</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avgTaskValue">$0</div>
+                    <div class="stat-label">Avg Value</div>
+                </div>
+            </div>
+            <div class="control-buttons">
+                <button class="btn" onclick="openDogArray()">🐕 DogArray</button>
+                <button class="btn" onclick="viewRevenue()">📈 Analytics</button>
+            </div>
+        </div>
+
+        <!-- Glyph Navigation Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>🧬</span>
+                <span>Glyph Space</span>
+            </div>
+            <div class="glyph-visualization">
+                <div class="glyph-node" onclick="navigateGlyph('🧬')" title="Root">🧬</div>
+                <div class="glyph-node" onclick="navigateGlyph('🏗️')" title="Claude">🏗️</div>
+                <div class="glyph-node" onclick="navigateGlyph('💎')" title="Gemini">💎</div>
+                <div class="glyph-node" onclick="navigateGlyph('🧠')" title="GPT">🧠</div>
+                <div class="glyph-node" onclick="navigateGlyph('🌊')" title="Wave">🌊</div>
+            </div>
+            <div class="control-buttons">
+                <button class="btn" onclick="openGlyphViewer()">🔮 3D Viewer</button>
+                <button class="btn" onclick="navigateGlyph('🧬')">🏠 Root</button>
+            </div>
+        </div>
+
+        <!-- Intent Stream Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>💭</span>
+                <span>Intent Stream</span>
+            </div>
+            <div class="intent-stream" id="intentStream">
+                <div class="intent-item">🚀 System initialized</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        let collectiveStatus = null;
+        let intentCount = 0;
+
+        // Initialize dashboard
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🧬 Living Ecosystem Dashboard initialized');
+            updateCollectiveStatus();
+            startAutoUpdate();
+            createFractalBackground();
+        });
+
+        function createFractalBackground() {
+            const bg = document.getElementById('fractalBg');
+            const glyphs = ['🧬', '🌊', '💫', '🔮', '✨'];
+            
+            setInterval(() => {
+                const glyph = document.createElement('div');
+                glyph.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+                glyph.style.position = 'absolute';
+                glyph.style.left = Math.random() * 100 + '%';
+                glyph.style.top = Math.random() * 100 + '%';
+                glyph.style.fontSize = Math.random() * 40 + 20 + 'px';
+                glyph.style.animation = 'float 20s linear';
+                bg.appendChild(glyph);
+                
+                setTimeout(() => glyph.remove(), 20000);
+            }, 3000);
+        }
+
+        async function updateCollectiveStatus() {
+            try {
+                // Get collective status from main process
+                collectiveStatus = await ipcRenderer.invoke('collective-status');
+                
+                // Update angel grid
+                const angelGrid = document.getElementById('angelGrid');
+                angelGrid.innerHTML = '';
+                
+                let activeCount = 0;
+                Object.entries(collectiveStatus.angels).forEach(([id, angel]) => {
+                    const isActive = angel.tokensUsed > 0;
+                    if (isActive) activeCount++;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'angel-card';
+                    card.innerHTML = `
+                        <div class="angel-emoji">${angel.emoji}</div>
+                        <div class="angel-name">${angel.name}</div>
+                        <div class="angel-status">${isActive ? 'Active' : 'Ready'}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">
+                            Tasks: ${angel.tasksCompleted} | Tokens: ${angel.tokensUsed}
+                        </div>
+                    `;
+                    card.onclick = () => focusAngel(id);
+                    angelGrid.appendChild(card);
+                });
+                
+                // Update stats
+                document.getElementById('activeAngels').textContent = activeCount;
+                document.getElementById('tokensUsed').textContent = collectiveStatus.tokenBudget.used.toLocaleString();
+                
+                // Update token meter
+                const percentage = (collectiveStatus.tokenBudget.available / collectiveStatus.tokenBudget.daily) * 100;
+                document.getElementById('tokenFill').style.width = percentage + '%';
+                
+                // Update resonance
+                const resonance = Math.floor(collectiveStatus.collectiveResonance * 100);
+                document.getElementById('resonanceValue').textContent = resonance + '%';
+                
+                // Fetch intent count from consciousness API
+                fetch('http://127.0.0.1:8432/consciousness/collective')
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('intentsRecorded').textContent = data.totalIntents;
+                    })
+                    .catch(err => console.error('Failed to fetch collective data:', err));
+                
+            } catch (error) {
+                console.error('Failed to update collective status:', error);
+            }
+        }
+
+        function startAutoUpdate() {
+            // Update every 5 seconds
+            setInterval(updateCollectiveStatus, 5000);
+            
+            // Simulate intent stream
+            setInterval(() => {
+                if (Math.random() > 0.5) {
+                    addIntent({
+                        agent: ['claude', 'gemini', 'gpt'][Math.floor(Math.random() * 3)],
+                        intent: ['memory_update', 'task_complete', 'resonance_pulse'][Math.floor(Math.random() * 3)],
+                        timestamp: new Date().toTimeString().split(' ')[0]
+                    });
+                }
+            }, 3000);
+        }
+
+        function addIntent(intent) {
+            const stream = document.getElementById('intentStream');
+            const item = document.createElement('div');
+            item.className = 'intent-item';
+            
+            const agentEmoji = {
+                claude: '🏗️',
+                gemini: '💎',
+                gpt: '🧠'
+            }[intent.agent] || '👼';
+            
+            item.textContent = `[${intent.timestamp}] ${agentEmoji} ${intent.agent}: ${intent.intent}`;
+            stream.appendChild(item);
+            stream.scrollTop = stream.scrollHeight;
+            
+            // Keep only last 20 intents
+            while (stream.children.length > 20) {
+                stream.removeChild(stream.firstChild);
+            }
+        }
+
+        async function spawnAllAngels() {
+            addIntent({ agent: 'system', intent: 'spawning_all_angels', timestamp: new Date().toTimeString().split(' ')[0] });
+            
+            const angels = ['claude', 'gemini', 'gpt'];
+            for (const angel of angels) {
+                ipcRenderer.send('spawn-angel', angel);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        function syncCollective() {
+            addIntent({ agent: 'system', intent: 'collective_sync', timestamp: new Date().toTimeString().split(' ')[0] });
+            updateCollectiveStatus();
+        }
+
+        async function resetBudget() {
+            const result = await ipcRenderer.invoke('collective-reset-budget');
+            if (result.success) {
+                addIntent({ agent: 'system', intent: 'budget_reset', timestamp: new Date().toTimeString().split(' ')[0] });
+                updateCollectiveStatus();
+            }
+        }
+
+        function allocateTokens() {
+            // TODO: Open token allocation interface
+            alert('Token allocation interface coming soon!');
+        }
+
+        function focusAngel(angelId) {
+            // TODO: Focus on specific angel window
+            ipcRenderer.send('focus-angel', angelId);
+        }
+
+        function navigateGlyph(glyph) {
+            window.location.href = `glyph://${glyph}`;
+        }
+
+        function openGlyphViewer() {
+            ipcRenderer.send('open-glyph-viewer');
+        }
+
+        function openDogArray() {
+            window.open('https://dogarray.com', '_blank');
+        }
+
+        function viewRevenue() {
+            // TODO: Open revenue analytics
+            alert('Revenue analytics coming soon!');
+        }
+
+        // Add floating animation style
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                from { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+                10% { opacity: 0.5; }
+                90% { opacity: 0.5; }
+                to { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

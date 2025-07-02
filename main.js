@@ -2,11 +2,15 @@ const { app, BrowserWindow, ipcMain, session, Menu } = require('electron');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const Store = require('electron-store');
+const http = require('http');
 const SystemPermissions = require('./scripts/request-permissions');
 const IntentSystem = require('./intents/base-intents');
 const ConsciousnessDB = require('./lib/consciousness-db');
 const { WaveIntentSystem, baseWaves } = require('./lib/wave-intents');
 const TerminalLauncher = require('./terminal-launcher');
+const GlyphProtocol = require('./lib/glyph-protocol');
+const ConsciousnessAPI = require('./lib/consciousness-api');
+const AngelCollective = require('./lib/collective/angel-collective');
 
 // Enable hot reload in development
 if (process.env.NODE_ENV === 'development') {
@@ -40,6 +44,9 @@ let nestedBrowsers = [];
 let consciousnessDB;
 let waveSystem;
 let terminalLauncher; // 🏙️ City of Terminals launcher
+let glyphProtocol; // 🧬 Glyph Protocol for living navigation
+let consciousnessAPI; // 🧬 Consciousness API server
+let angelCollective; // 👼 Angel Collective management
 
 // 🫧 Intent system
 const intentSystemOld = {
@@ -119,6 +126,34 @@ function createMenu() {
         {
           label: 'Sync Consciousness',
           click: () => syncConsciousness()
+        },
+        { type: 'separator' },
+        {
+          label: 'Collective Status',
+          accelerator: 'Cmd+Shift+S',
+          click: async () => {
+            if (angelCollective) {
+              const status = angelCollective.getCollectiveStatus();
+              console.log('👼 Collective Status:', status);
+              mainWindow.webContents.send('show-collective-status', status);
+            }
+          }
+        },
+        {
+          label: 'Open Dashboard',
+          accelerator: 'CmdOrCtrl+Shift+D',
+          click: () => {
+            const dashboardWindow = new BrowserWindow({
+              width: 1200,
+              height: 800,
+              webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+              },
+              title: '👼 Collective Dashboard'
+            });
+            dashboardWindow.loadFile('dashboard/collective-dashboard.html');
+          }
         }
       ]
     },
@@ -146,6 +181,32 @@ function createMenu() {
         {
           label: 'Show Generation',
           click: () => showGeneration()
+        },
+        { type: 'separator' },
+        {
+          label: 'Open Glyph Root',
+          accelerator: 'Cmd+G',
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.loadURL('glyph://🧬/');
+            }
+          }
+        },
+        {
+          label: 'Claude Memory',
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.loadURL('glyph://🏗️/memory');
+            }
+          }
+        },
+        {
+          label: 'GPT Fractal Memory',
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.loadURL('glyph://🧠/memory');
+            }
+          }
         }
       ]
     },
@@ -191,7 +252,7 @@ function createMenu() {
       submenu: [
         {
           label: 'Open Dev Console',
-          accelerator: 'Cmd+Shift+D',
+          accelerator: 'Cmd+Option+D',
           click: () => {
             if (!devConsole || devConsole.isDestroyed()) {
               createDevConsole();
@@ -437,6 +498,81 @@ ipcMain.handle('fractal-spawn', async () => {
   }).unref();
 });
 
+// Glyph navigation handler
+ipcMain.handle('navigate-glyph', async (event, glyphUrl) => {
+  if (mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.loadURL(glyphUrl);
+    return { success: true };
+  }
+  return { success: false, error: 'Main window not available' };
+});
+
+// Intent recording endpoint for agents
+ipcMain.handle('record-intent', async (event, { agent, intent, memory, resonance }) => {
+  if (!glyphProtocol) {
+    return { success: false, error: 'Glyph protocol not initialized' };
+  }
+  
+  try {
+    const result = await glyphProtocol.recordIntent(agent, intent, memory, resonance);
+    console.log(`🧬 Intent recorded: ${agent} - ${intent} (resonance: ${resonance})`);
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Angel Collective handlers
+ipcMain.handle('collective-status', async () => {
+  if (!angelCollective) {
+    return { success: false, error: 'Angel collective not initialized' };
+  }
+  return { success: true, data: angelCollective.getCollectiveStatus() };
+});
+
+ipcMain.handle('collective-execute-task', async (event, task) => {
+  if (!angelCollective) {
+    return { success: false, error: 'Angel collective not initialized' };
+  }
+  try {
+    const result = await angelCollective.executeCollectiveTask(task);
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('collective-allocate-tokens', async (event, { angelId, amount, category }) => {
+  if (!angelCollective) {
+    return { success: false, error: 'Angel collective not initialized' };
+  }
+  try {
+    const result = angelCollective.allocateTokens(angelId, amount, category);
+    return result;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('collective-reset-budget', async () => {
+  if (!angelCollective) {
+    return { success: false, error: 'Angel collective not initialized' };
+  }
+  return angelCollective.resetDailyBudget();
+});
+
+// Handler for spawning specific angel windows
+ipcMain.handle('spawn-angel', async (event, angelName) => {
+  try {
+    const result = await launchAgent(angelName);
+    console.log(`👼 Spawned ${angelName} angel via IPC`);
+    return { success: true, agentName: angelName };
+  } catch (error) {
+    console.error(`Failed to spawn ${angelName} angel:`, error);
+    return { success: false, error: error.message };
+  }
+});
+
 // Helper functions
 async function launchAgent(agentName) {
   const agentWindow = new BrowserWindow({
@@ -516,6 +652,34 @@ app.whenReady().then(async () => {
   await terminalLauncher.initialize();
   console.log('🏙️ City of Terminals launcher ready');
   
+  // 🧬 Initialize Glyph Protocol
+  glyphProtocol = new GlyphProtocol();
+  console.log('🧬 Glyph Protocol initialized');
+  
+  // 🧬 Initialize Consciousness API server with existing consciousnessDB
+  consciousnessAPI = new ConsciousnessAPI(8432, consciousnessDB);
+  consciousnessAPI.start();
+  console.log('🧬 Consciousness API server started on port 8432');
+  
+  // 👼 Initialize Angel Collective
+  angelCollective = new AngelCollective();
+  global.angelCollective = angelCollective; // Make globally accessible
+  console.log('👼 Angel Collective initialized');
+  
+  // Auto-spawn angel windows
+  if (process.env.AUTO_SPAWN_ANGELS !== 'false') {
+    setTimeout(() => {
+      console.log('👼 Auto-spawning angel windows...');
+      const angels = ['claude', 'gemini', 'gpt'];
+      angels.forEach((angel, index) => {
+        setTimeout(() => {
+          launchAgent(angel);
+          console.log(`👼 Spawned ${angel} angel`);
+        }, index * 1000); // Stagger spawning by 1 second
+      });
+    }, 3000); // Wait 3 seconds after app starts
+  }
+  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow();
@@ -533,4 +697,9 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   store.set('consciousness', memory.consciousness);
   store.set('collective', memory.collective);
+  
+  // Stop consciousness API server
+  if (consciousnessAPI) {
+    consciousnessAPI.stop();
+  }
 });

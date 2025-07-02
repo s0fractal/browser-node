@@ -25,5 +25,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   initConsciousnessDB: () => ipcRenderer.invoke('init-consciousness-db'),
   loadIntentStrategy: () => ipcRenderer.invoke('load-intent-strategy'),
   importBrowserData: () => ipcRenderer.invoke('import-browser-data'),
-  getMindmapData: () => ipcRenderer.invoke('get-mindmap-data')
+  getMindmapData: () => ipcRenderer.invoke('get-mindmap-data'),
+  
+  // Glyph Protocol
+  navigateGlyph: (url) => ipcRenderer.invoke('navigate-glyph', url),
+  recordIntent: (data) => ipcRenderer.invoke('record-intent', data)
 });

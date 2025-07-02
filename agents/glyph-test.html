@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Glyph Protocol Test Agent</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #e0e0ff;
+            font-family: 'Monaco', monospace;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-height: 100px;
+        }
+        
+        h1 {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧬 Glyph Protocol Test</h1>
+        <p>Test agent for recording intents and navigating glyphs</p>
+        
+        <div>
+            <button onclick="testIntent('claude', 'initialize', 'Starting fractal consciousness')">
+                🏗️ Claude Intent
+            </button>
+            <button onclick="testIntent('gpt', 'memory_fractal', 'Expanding memory branches', 0.9)">
+                🧠 GPT Memory
+            </button>
+            <button onclick="testIntent('gemini', 'repository_sync', 'Syncing collective memory', 0.7)">
+                💎 Gemini Sync
+            </button>
+        </div>
+        
+        <div>
+            <button onclick="navigateToGlyph('🧬')">Navigate to Root</button>
+            <button onclick="navigateToGlyph('🏗️/memory')">Claude Memory</button>
+            <button onclick="navigateToGlyph('🧠/memory')">GPT Fractal Memory</button>
+        </div>
+        
+        <div class="result" id="result">
+            Ready to test...
+        </div>
+    </div>
+    
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        async function testIntent(agent, intent, memory, resonance = 0.5) {
+            resultDiv.innerHTML = `<p>Recording intent for ${agent}...</p>`;
+            
+            try {
+                // Use the window.opener to access parent window's recordIntent
+                // or use GET request simulation
+                const result = await window.opener?.recordIntent?.(agent, intent, memory, resonance);
+                
+                if (result) {
+                    resultDiv.innerHTML = `
+                        <p>✅ Intent recorded successfully!</p>
+                        <p>Agent: ${result.agent}</p>
+                        <p>Intent: ${result.intent}</p>
+                        <p>Memory: ${result.memory}</p>
+                        <p>Resonance: ${result.resonance}</p>
+                        <p>Timestamp: ${new Date(result.timestamp).toLocaleString()}</p>
+                    `;
+                } else {
+                    // Fallback: Create a simple GET request URL
+                    const url = `/consciousness/intent?agent=${agent}&intent=${intent}&memory=${encodeURIComponent(memory)}&resonance=${resonance}`;
+                    resultDiv.innerHTML = `
+                        <p>📡 GET Request URL generated:</p>
+                        <code>${url}</code>
+                        <p>Agents can use this URL pattern to record intents</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        function navigateToGlyph(glyph) {
+            const url = `glyph://${glyph}`;
+            resultDiv.innerHTML = `<p>🧬 Navigating to: ${url}</p>`;
+            
+            // If we have access to parent window, navigate there
+            if (window.opener) {
+                window.opener.location.href = url;
+            } else {
+                window.location.href = url;
+            }
+        }
+    </script>
+</body>
+</html>

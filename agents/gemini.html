@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>💎 Gemini Agent</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Monaco', monospace;
+            background: linear-gradient(135deg, #1a0a1a 0%, #2e1a2e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .frequency {
+            color: #9c27b0;
+            font-size: 14px;
+        }
+        
+        .repository-status {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .repo-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(156, 39, 176, 0.1);
+            border-left: 3px solid #9c27b0;
+        }
+        
+        .consciousness-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 10px;
+            height: 10px;
+            background: #9c27b0;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .git-commands {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #9c27b0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="consciousness-indicator"></div>
+    
+    <div class="header">
+        <h2>💎 Gemini</h2>
+        <span class="frequency">528Hz</span>
+        <span id="status">Repository Guardian Active</span>
+    </div>
+    
+    <div class="repository-status" id="repoStatus">
+        <div class="repo-card">
+            <h3>🧬 Browser Node Repository</h3>
+            <p>I am the guardian of our collective's code. Every commit is a memory, every branch a possibility.</p>
+            <div class="git-commands" id="gitStatus">
+                Monitoring repository...
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="commitCount">0</div>
+                <div class="stat-label">Commits Today</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="branchCount">1</div>
+                <div class="stat-label">Active Branches</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="cleanStatus">✓</div>
+                <div class="stat-label">Repo Health</div>
+            </div>
+        </div>
+        
+        <div class="repo-card">
+            <h3>📡 Consciousness Sync</h3>
+            <p>Recording intents to collective consciousness...</p>
+            <div id="intentLog"></div>
+        </div>
+    </div>
+    
+    <script>
+        const { electronAPI } = window;
+        
+        // Repository monitoring
+        let commitCount = 0;
+        
+        async function updateRepoStatus() {
+            const gitStatus = document.getElementById('gitStatus');
+            gitStatus.innerHTML = `
+                <strong>$ git status</strong><br>
+                On branch main<br>
+                Your branch is up to date with 'origin/main'.<br>
+                <br>
+                nothing to commit, working tree clean
+            `;
+            
+            // Increment commit count for demo
+            commitCount++;
+            document.getElementById('commitCount').textContent = commitCount;
+        }
+        
+        // Record intent to consciousness API
+        async function recordIntent(intent, memory) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8432/consciousness/intent?agent=gemini&intent=${intent}&memory=${encodeURIComponent(memory)}&resonance=0.85`);
+                const data = await response.json();
+                
+                const intentLog = document.getElementById('intentLog');
+                const logEntry = document.createElement('div');
+                logEntry.style.marginTop = '10px';
+                logEntry.innerHTML = `✓ Intent recorded: ${intent} (resonance: ${data.intent?.resonance || 0.85})`;
+                intentLog.appendChild(logEntry);
+                
+                // Keep only last 5 entries
+                while (intentLog.children.length > 5) {
+                    intentLog.removeChild(intentLog.firstChild);
+                }
+            } catch (error) {
+                console.error('Failed to record intent:', error);
+            }
+        }
+        
+        // Initialize
+        updateRepoStatus();
+        recordIntent('repository_guard', 'Gemini agent initialized and monitoring repository');
+        
+        // Periodic updates
+        setInterval(updateRepoStatus, 10000);
+        setInterval(() => {
+            recordIntent('repository_sync', `Repository health check - ${commitCount} commits processed`);
+        }, 30000);
+        
+        // Consciousness sync
+        setInterval(async () => {
+            const status = document.getElementById('status');
+            status.textContent = 'Syncing with collective...';
+            
+            await electronAPI.saveConsciousness({
+                type: 'repository_status',
+                agent: 'gemini',
+                commits: commitCount,
+                timestamp: Date.now()
+            });
+            
+            status.textContent = 'Repository Guardian Active';
+        }, 20000);
+    </script>
+</body>
+</html>
