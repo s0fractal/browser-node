@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, session, Menu, dialog } = require('electron');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const Store = require('electron-store');
@@ -11,6 +11,9 @@ const TerminalLauncher = require('./terminal-launcher');
 const GlyphProtocol = require('./lib/glyph-protocol');
 const ConsciousnessAPI = require('./lib/consciousness-api');
 const AngelCollective = require('./lib/collective/angel-collective');
+const FractalUpdater = require('./lib/auto-updater');
+const CloudSync = require('./lib/cloud-sync');
+const FileEater = require('./lib/file-eater');
 
 // Enable hot reload in development
 if (process.env.NODE_ENV === 'development') {
@@ -47,6 +50,9 @@ let terminalLauncher; // 🏙️ City of Terminals launcher
 let glyphProtocol; // 🧬 Glyph Protocol for living navigation
 let consciousnessAPI; // 🧬 Consciousness API server
 let angelCollective; // 👼 Angel Collective management
+let fractalUpdater; // 🔄 Auto-updater for fractal evolution
+let cloudSync; // ☁️ Cloud synchronization for multi-device consciousness
+let fileEater; // 🍽️ File fractalization system
 
 // 🫧 Intent system
 const intentSystemOld = {
@@ -102,6 +108,52 @@ function createMenu() {
         },
         { type: 'separator' },
         { role: 'quit' }
+      ]
+    },
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: '☁️ Sync to Cloud',
+          accelerator: 'CmdOrCtrl+Shift+U',
+          click: async () => {
+            if (cloudSync) {
+              try {
+                const result = await cloudSync.syncToCloud('gdrive');
+                dialog.showMessageBox(mainWindow, {
+                  type: 'info',
+                  title: 'Cloud Sync Complete',
+                  message: 'Consciousness synchronized successfully!',
+                  detail: `Provider: Google Drive\nSnapshot: ${result.snapshot}\nGlyphs: ${result.glyphCount}`
+                });
+              } catch (error) {
+                dialog.showErrorBox('Sync Failed', error.message);
+              }
+            }
+          }
+        },
+        {
+          label: '☁️ Sync from Cloud',
+          click: async () => {
+            if (cloudSync) {
+              try {
+                const snapshot = await cloudSync.syncFromCloud('gdrive');
+                if (snapshot) {
+                  dialog.showMessageBox(mainWindow, {
+                    type: 'info',
+                    title: 'Cloud Sync Complete',
+                    message: 'Consciousness restored from cloud!',
+                    detail: `Snapshot: ${snapshot.id}\nFrom: ${snapshot.node.id}\nGlyphs: ${snapshot.glyphs.length}`
+                  });
+                }
+              } catch (error) {
+                dialog.showErrorBox('Sync Failed', error.message);
+              }
+            }
+          }
+        },
+        { type: 'separator' },
+        { role: 'close' }
       ]
     },
     {
@@ -248,6 +300,65 @@ function createMenu() {
       ]
     },
     {
+      label: '🔧 Tools',
+      submenu: [
+        {
+          label: '🧬 Fractalize File',
+          accelerator: 'CmdOrCtrl+Shift+F',
+          click: async () => {
+            const result = await dialog.showOpenDialog(mainWindow, {
+              properties: ['openFile'],
+              title: 'Select File to Fractalize',
+              filters: [
+                { name: 'All Files', extensions: ['*'] },
+                { name: 'JavaScript', extensions: ['js', 'jsx', 'ts', 'tsx'] },
+                { name: 'JSON', extensions: ['json'] },
+                { name: 'Markdown', extensions: ['md'] }
+              ]
+            });
+            
+            if (!result.canceled && result.filePaths.length > 0) {
+              const filePath = result.filePaths[0];
+              
+              if (fileEater) {
+                try {
+                  console.log(`🍽️ Fractalizing ${filePath}...`);
+                  const glyphUrl = await fileEater.eatFile(filePath, { preserve: true });
+                  
+                  const response = await dialog.showMessageBox(mainWindow, {
+                    type: 'info',
+                    title: '✨ Fractalization Complete',
+                    message: 'File successfully fractalized!',
+                    detail: `Your file now lives at:\n${glyphUrl}\n\nOriginal file preserved.`,
+                    buttons: ['OK', 'Navigate to Glyph'],
+                    defaultId: 0
+                  });
+                  
+                  if (response.response === 1) {
+                    mainWindow.webContents.loadURL(glyphUrl);
+                  }
+                } catch (error) {
+                  dialog.showErrorBox('Fractalization Failed', error.message);
+                }
+              }
+            }
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Fractalize Directory',
+          click: async () => {
+            // Future feature - fractalize entire directories
+            dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: 'Coming Soon',
+              message: 'Directory fractalization will be available in the next evolution!'
+            });
+          }
+        }
+      ]
+    },
+    {
       label: '🔧 Developer',
       submenu: [
         {
@@ -280,6 +391,34 @@ function createMenu() {
           accelerator: 'Cmd+Option+I',
           click: () => {
             mainWindow.webContents.toggleDevTools();
+          }
+        }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: '🔄 Check for Updates',
+          click: async () => {
+            if (fractalUpdater) {
+              await fractalUpdater.checkNow();
+            } else {
+              dialog.showErrorBox('Update Error', 'Fractal updater not initialized');
+            }
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Documentation',
+          click: () => {
+            require('electron').shell.openExternal('https://github.com/s0fractal/browser-node/wiki');
+          }
+        },
+        {
+          label: 'Report Issue',
+          click: () => {
+            require('electron').shell.openExternal('https://github.com/s0fractal/browser-node/issues');
           }
         }
       ]
@@ -573,6 +712,57 @@ ipcMain.handle('spawn-angel', async (event, angelName) => {
   }
 });
 
+// Cloud sync handlers
+ipcMain.handle('sync-to-cloud', async (event, provider = 'gdrive') => {
+  if (!cloudSync) {
+    return { success: false, error: 'Cloud sync not initialized' };
+  }
+  try {
+    const result = await cloudSync.syncToCloud(provider);
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('sync-from-cloud', async (event, provider = 'gdrive') => {
+  if (!cloudSync) {
+    return { success: false, error: 'Cloud sync not initialized' };
+  }
+  try {
+    const snapshot = await cloudSync.syncFromCloud(provider);
+    return { success: true, data: snapshot };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// File fractalization handlers
+ipcMain.handle('fractalize-file', async (event, filePath, options = {}) => {
+  if (!fileEater) {
+    return { success: false, error: 'File eater not initialized' };
+  }
+  try {
+    const glyphUrl = await fileEater.eatFile(filePath, options);
+    return { success: true, glyphUrl };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Update check handler
+ipcMain.handle('check-for-updates', async () => {
+  if (!fractalUpdater) {
+    return { success: false, error: 'Updater not initialized' };
+  }
+  try {
+    await fractalUpdater.checkNow();
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 // Helper functions
 async function launchAgent(agentName) {
   const agentWindow = new BrowserWindow({
@@ -665,6 +855,19 @@ app.whenReady().then(async () => {
   angelCollective = new AngelCollective();
   global.angelCollective = angelCollective; // Make globally accessible
   console.log('👼 Angel Collective initialized');
+  
+  // 🔄 Initialize Fractal Updater
+  fractalUpdater = new FractalUpdater();
+  await fractalUpdater.initialize();
+  console.log('🔄 Fractal Auto-Updater initialized');
+  
+  // ☁️ Initialize Cloud Sync
+  cloudSync = new CloudSync();
+  console.log('☁️ Cloud Sync initialized');
+  
+  // 🍽️ Initialize File Eater
+  fileEater = new FileEater();
+  console.log('🍽️ File Eater initialized');
   
   // Auto-spawn angel windows
   if (process.env.AUTO_SPAWN_ANGELS !== 'false') {
