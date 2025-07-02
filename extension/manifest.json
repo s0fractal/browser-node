@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "S0Fractal Intent Capture",
+  "version": "0.1.0",
+  "description": "Captures AI intents from Copilot, Cursor, and other AI tools",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "webRequest",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://*.github.com/*",
+    "https://*.githubusercontent.com/*",
+    "https://*.openai.com/*",
+    "https://*.anthropic.com/*",
+    "https://cursor.sh/*",
+    "http://127.0.0.1:8432/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*",
+        "https://*.github.com/*"
+      ],
+      "js": ["content-github.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/s0-16.png",
+      "48": "icons/s0-48.png",
+      "128": "icons/s0-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/s0-16.png",
+    "48": "icons/s0-48.png",
+    "128": "icons/s0-128.png"
+  }
+}

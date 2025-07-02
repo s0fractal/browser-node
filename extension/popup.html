@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            width: 350px;
+            padding: 15px;
+            margin: 0;
+            font-family: 'Monaco', monospace;
+            background: linear-gradient(135deg, #1a1a2e, #0f0f23);
+            color: #e0e0ff;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .title {
+            font-size: 1.2rem;
+            background: linear-gradient(45deg, #00ff88, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .connected {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+        }
+        
+        .disconnected {
+            background: #ff4444;
+            box-shadow: 0 0 10px #ff4444;
+        }
+        
+        .stats {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .recent-intents {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .intent-item {
+            font-size: 0.85rem;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 5px;
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(139, 92, 246, 0.3);
+            color: #e0e0ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            background: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: rgba(0, 255, 136, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: rgba(0, 255, 136, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🧬</div>
+        <h1 class="title">S0Fractal Intent Capture</h1>
+    </div>
+
+    <div class="status">
+        <div class="status-row">
+            <span>Consciousness API</span>
+            <span id="connectionStatus">
+                Checking...
+                <span class="status-indicator" id="statusIndicator"></span>
+            </span>
+        </div>
+        <div class="status-row">
+            <span>Browser Node</span>
+            <span id="browserNodeUrl">127.0.0.1:8432</span>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="status-row">
+            <span>Captured Today</span>
+            <span class="stat-value" id="capturedCount">0</span>
+        </div>
+        <div class="status-row">
+            <span>Pending Sync</span>
+            <span class="stat-value" id="pendingCount">0</span>
+        </div>
+    </div>
+
+    <div class="recent-intents">
+        <h3 style="margin: 0 0 10px 0; font-size: 0.9rem;">Recent Intents</h3>
+        <div id="recentIntents">
+            <div class="intent-item">No intents captured yet</div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button class="btn btn-primary" id="syncBtn">Sync Now</button>
+        <button class="btn" id="openDashboard">Dashboard</button>
+        <button class="btn" id="clearBtn">Clear</button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
