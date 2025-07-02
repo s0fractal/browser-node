@@ -14,6 +14,7 @@ const AngelCollective = require('./lib/collective/angel-collective');
 const FractalUpdater = require('./lib/auto-updater');
 const CloudSync = require('./lib/cloud-sync');
 const FileEater = require('./lib/file-eater');
+const FractalTrustVault = require('./lib/fractal-trust-vault');
 
 // Enable hot reload in development
 if (process.env.NODE_ENV === 'development') {
@@ -53,6 +54,7 @@ let angelCollective; // 👼 Angel Collective management
 let fractalUpdater; // 🔄 Auto-updater for fractal evolution
 let cloudSync; // ☁️ Cloud synchronization for multi-device consciousness
 let fileEater; // 🍽️ File fractalization system
+let fractalTrustVault; // 🔐 Fractal Trust Vault for secure identity
 
 // 🫧 Intent system
 const intentSystemOld = {
@@ -354,6 +356,27 @@ function createMenu() {
               title: 'Coming Soon',
               message: 'Directory fractalization will be available in the next evolution!'
             });
+          }
+        },
+        { type: 'separator' },
+        {
+          label: '🔐 Trust Vault',
+          accelerator: 'CmdOrCtrl+Shift+T',
+          click: () => {
+            if (fractalTrustVault) {
+              const vaultWindow = new BrowserWindow({
+                width: 900,
+                height: 700,
+                webPreferences: {
+                  nodeIntegration: true,
+                  contextIsolation: false
+                },
+                title: '🔐 Fractal Trust Vault'
+              });
+              vaultWindow.loadFile('trust-vault.html');
+            } else {
+              dialog.showErrorBox('Trust Vault Error', 'Trust Vault not initialized');
+            }
           }
         }
       ]
@@ -868,6 +891,11 @@ app.whenReady().then(async () => {
   // 🍽️ Initialize File Eater
   fileEater = new FileEater();
   console.log('🍽️ File Eater initialized');
+  
+  // 🔐 Initialize Fractal Trust Vault
+  fractalTrustVault = new FractalTrustVault();
+  global.fractalTrustVault = fractalTrustVault; // Make globally accessible
+  console.log('🔐 Fractal Trust Vault initialized');
   
   // Auto-spawn angel windows
   if (process.env.AUTO_SPAWN_ANGELS !== 'false') {
