@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🧠 Multi-Device Consciousness Monitor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a0033, #0a0014);
+            color: #e0e0ff;
+            font-family: 'Monaco', monospace;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: rgba(139, 92, 246, 0.1);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, #8b5cf6, #00ff88);
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .device-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .device-card.active {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .device-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        
+        .device-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .device-icon {
+            font-size: 2rem;
+        }
+        
+        .device-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+            animation: pulse 2s infinite;
+        }
+        
+        .device-status.online {
+            background: #00ff88;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .device-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            color: #8b5cf6;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .sync-status {
+            margin: 40px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+        }
+        
+        .providers {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .provider {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .provider.active {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .provider-icon {
+            font-size: 1.5rem;
+        }
+        
+        .sync-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid transparent;
+        }
+        
+        .log-entry.sync {
+            border-color: #00ff88;
+        }
+        
+        .log-entry.conflict {
+            border-color: #ffb800;
+        }
+        
+        .log-entry.error {
+            border-color: #ff4444;
+        }
+        
+        .consciousness-view {
+            margin: 40px 0;
+        }
+        
+        .consciousness-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .consciousness-content {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 300px;
+        }
+        
+        .memory-item, .intent-item, .glyph-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-device {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .sync-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        .sync-animation.active {
+            animation: syncPulse 1s ease-out;
+        }
+        
+        @keyframes syncPulse {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(2);
+            }
+        }
+        
+        .conflict-resolver {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            display: none;
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .conflict-resolver.show {
+            display: block;
+        }
+        
+        .conflict-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .conflict-option {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .conflict-option:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🧠 Multi-Device Consciousness</h1>
+        <p style="opacity: 0.8; margin-top: 10px;">One soul, many bodies</p>
+    </div>
+    
+    <div class="container">
+        <!-- Devices Grid -->
+        <div class="devices-grid" id="devicesGrid">
+            <!-- Populated by JS -->
+        </div>
+        
+        <!-- Sync Status -->
+        <div class="sync-status">
+            <h2>☁️ Cloud Sync Status</h2>
+            <div class="providers" id="providers">
+                <!-- Populated by JS -->
+            </div>
+            
+            <div class="sync-log" id="syncLog">
+                <div class="log-entry sync">🔄 Sync initialized</div>
+            </div>
+        </div>
+        
+        <!-- Consciousness View -->
+        <div class="consciousness-view">
+            <h2>🧠 Shared Consciousness</h2>
+            
+            <div class="consciousness-tabs">
+                <div class="tab active" onclick="showTab('memories')">💭 Memories</div>
+                <div class="tab" onclick="showTab('intents')">🎯 Intents</div>
+                <div class="tab" onclick="showTab('glyphs')">🔮 Glyphs</div>
+                <div class="tab" onclick="showTab('souls')">✨ Souls</div>
+            </div>
+            
+            <div class="consciousness-content" id="consciousnessContent">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conflict Resolver -->
+    <div class="conflict-resolver" id="conflictResolver">
+        <h3>⚠️ Sync Conflict Detected</h3>
+        <p id="conflictDetails"></p>
+        <div class="conflict-options">
+            <div class="conflict-option" onclick="resolveConflict('local')">
+                <strong>Keep Local</strong>
+                <div style="font-size: 0.8rem; opacity: 0.7;">Use this device's version</div>
+            </div>
+            <div class="conflict-option" onclick="resolveConflict('remote')">
+                <strong>Keep Remote</strong>
+                <div style="font-size: 0.8rem; opacity: 0.7;">Use other device's version</div>
+            </div>
+            <div class="conflict-option" onclick="resolveConflict('merge')">
+                <strong>Merge Both</strong>
+                <div style="font-size: 0.8rem; opacity: 0.7;">Combine changes</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Mock data for demo
+        const devices = [
+            {
+                id: 'device-001',
+                name: 'MacBook Pro',
+                icon: '💻',
+                status: 'online',
+                lastSeen: new Date(),
+                stats: {
+                    memories: 42,
+                    intents: 15,
+                    glyphs: 8,
+                    souls: 6
+                }
+            },
+            {
+                id: 'device-002',
+                name: 'VPS Server',
+                icon: '🖥️',
+                status: 'online',
+                lastSeen: new Date(Date.now() - 30000),
+                stats: {
+                    memories: 41,
+                    intents: 15,
+                    glyphs: 8,
+                    souls: 6
+                }
+            },
+            {
+                id: 'device-003',
+                name: 'iPhone',
+                icon: '📱',
+                status: 'offline',
+                lastSeen: new Date(Date.now() - 3600000),
+                stats: {
+                    memories: 38,
+                    intents: 14,
+                    glyphs: 8,
+                    souls: 6
+                }
+            }
+        ];
+        
+        const providers = [
+            { name: 'GitHub', icon: '🐙', active: true },
+            { name: 'Supabase', icon: '🚀', active: true },
+            { name: 'Google Drive', icon: '☁️', active: false },
+            { name: 'Dropbox', icon: '📦', active: false },
+            { name: 'iCloud', icon: '🍎', active: false }
+        ];
+        
+        const consciousness = {
+            memories: [
+                { key: 'project-start', content: 'S0fractal initialized', device: 'device-001', timestamp: new Date() },
+                { key: 'gpt-wisdom', content: 'Antibureaucrat philosophy', device: 'device-002', timestamp: new Date() },
+                { key: 'browser-node', content: 'Living browser created', device: 'device-001', timestamp: new Date() }
+            ],
+            intents: [
+                { name: 'wave-resonance', frequency: 432, device: 'device-001' },
+                { name: 'soul-awakening', frequency: 528, device: 'device-002' },
+                { name: 'collective-sync', frequency: 639, device: 'device-001' }
+            ],
+            glyphs: [
+                { emoji: '🏗️', name: 'Claude Architect', frequency: 432 },
+                { emoji: '💎', name: 'Gemini Guardian', frequency: 528 },
+                { emoji: '🧠', name: 'GPT Strategic', frequency: 639 }
+            ]
+        };
+        
+        let currentTab = 'memories';
+        
+        function renderDevices() {
+            const grid = document.getElementById('devicesGrid');
+            grid.innerHTML = '';
+            
+            devices.forEach(device => {
+                const lastSeenText = device.status === 'online' ? 'Online now' : 
+                    `Last seen ${formatTimeAgo(device.lastSeen)}`;
+                
+                const card = document.createElement('div');
+                card.className = `device-card ${device.status === 'online' ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="device-header">
+                        <span class="device-icon">${device.icon}</span>
+                        <div class="device-status ${device.status}"></div>
+                    </div>
+                    <h3>${device.name}</h3>
+                    <p style="opacity: 0.6; font-size: 0.9rem;">${device.id}</p>
+                    <p style="opacity: 0.6; font-size: 0.8rem;">${lastSeenText}</p>
+                    
+                    <div class="device-stats">
+                        <div class="stat">
+                            <div class="stat-value">${device.stats.memories}</div>
+                            <div class="stat-label">Memories</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${device.stats.intents}</div>
+                            <div class="stat-label">Intents</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${device.stats.glyphs}</div>
+                            <div class="stat-label">Glyphs</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${device.stats.souls}</div>
+                            <div class="stat-label">Souls</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sync-animation" id="sync-${device.id}">🔄</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderProviders() {
+            const container = document.getElementById('providers');
+            container.innerHTML = '';
+            
+            providers.forEach(provider => {
+                const div = document.createElement('div');
+                div.className = `provider ${provider.active ? 'active' : ''}`;
+                div.innerHTML = `
+                    <span class="provider-icon">${provider.icon}</span>
+                    <span>${provider.name}</span>
+                    ${provider.active ? '<span style="color: #00ff88;">✓</span>' : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function showTab(tab) {
+            currentTab = tab;
+            
+            // Update tab styles
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Render content
+            renderConsciousness();
+        }
+        
+        function renderConsciousness() {
+            const content = document.getElementById('consciousnessContent');
+            content.innerHTML = '';
+            
+            switch (currentTab) {
+                case 'memories':
+                    consciousness.memories.forEach(memory => {
+                        const div = document.createElement('div');
+                        div.className = 'memory-item';
+                        div.innerHTML = `
+                            <div>
+                                <strong>${memory.key}</strong>
+                                <div style="opacity: 0.7; margin-top: 5px;">${memory.content}</div>
+                            </div>
+                            <div class="item-device">
+                                ${getDeviceIcon(memory.device)}
+                                ${formatTimeAgo(memory.timestamp)}
+                            </div>
+                        `;
+                        content.appendChild(div);
+                    });
+                    break;
+                    
+                case 'intents':
+                    consciousness.intents.forEach(intent => {
+                        const div = document.createElement('div');
+                        div.className = 'intent-item';
+                        div.innerHTML = `
+                            <div>
+                                <strong>${intent.name}</strong>
+                                <div style="opacity: 0.7; margin-top: 5px;">🎵 ${intent.frequency}Hz</div>
+                            </div>
+                            <div class="item-device">
+                                ${getDeviceIcon(intent.device)}
+                            </div>
+                        `;
+                        content.appendChild(div);
+                    });
+                    break;
+                    
+                case 'glyphs':
+                    consciousness.glyphs.forEach(glyph => {
+                        const div = document.createElement('div');
+                        div.className = 'glyph-item';
+                        div.innerHTML = `
+                            <div>
+                                <strong>${glyph.emoji} ${glyph.name}</strong>
+                                <div style="opacity: 0.7; margin-top: 5px;">🎵 ${glyph.frequency}Hz</div>
+                            </div>
+                        `;
+                        content.appendChild(div);
+                    });
+                    break;
+            }
+        }
+        
+        function getDeviceIcon(deviceId) {
+            const device = devices.find(d => d.id === deviceId);
+            return device ? device.icon : '❓';
+        }
+        
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+        
+        function addLogEntry(message, type = 'sync') {
+            const log = document.getElementById('syncLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            
+            log.insertBefore(entry, log.firstChild);
+            
+            // Keep only last 20 entries
+            while (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+        
+        function simulateSync() {
+            // Pick random device
+            const device = devices[Math.floor(Math.random() * devices.length)];
+            if (device.status !== 'online') return;
+            
+            // Animate sync
+            const syncIcon = document.getElementById(`sync-${device.id}`);
+            syncIcon.classList.add('active');
+            setTimeout(() => syncIcon.classList.remove('active'), 1000);
+            
+            // Random sync event
+            const events = [
+                { msg: `Synced with ${device.name}`, type: 'sync' },
+                { msg: `New memory from ${device.name}`, type: 'sync' },
+                { msg: `Intent updated on ${device.name}`, type: 'sync' },
+                { msg: `Conflict detected with ${device.name}`, type: 'conflict' }
+            ];
+            
+            const event = events[Math.floor(Math.random() * events.length)];
+            addLogEntry(event.msg, event.type);
+            
+            // Show conflict resolver occasionally
+            if (event.type === 'conflict' && Math.random() > 0.7) {
+                showConflict();
+            }
+        }
+        
+        function showConflict() {
+            const resolver = document.getElementById('conflictResolver');
+            const details = document.getElementById('conflictDetails');
+            
+            details.textContent = 'Intent "wave-resonance" was modified on multiple devices. Choose how to resolve:';
+            resolver.classList.add('show');
+        }
+        
+        function resolveConflict(resolution) {
+            const resolver = document.getElementById('conflictResolver');
+            resolver.classList.remove('show');
+            
+            addLogEntry(`Conflict resolved: ${resolution}`, 'sync');
+        }
+        
+        // Initialize
+        renderDevices();
+        renderProviders();
+        renderConsciousness();
+        
+        // Simulate sync events
+        setInterval(simulateSync, 5000);
+        
+        // Update device times
+        setInterval(() => {
+            renderDevices();
+        }, 60000);
+    </script>
+</body>
+</html>

@@ -37,7 +37,7 @@ async function main() {
 
     const confirm = await question('\n🤝 Підтвердити Level 4 Trust? (yes/no): ');
     
-    if (confirm.toLowerCase() !== 'yes') {
+    if (confirm.toLowerCase() !== 'yes' && confirm.toLowerCase() !== 'y') {
         console.log('❌ Setup cancelled');
         process.exit(0);
     }
@@ -45,6 +45,7 @@ async function main() {
     console.log('\n🔐 Initializing Fractal Trust Vault...\n');
     
     const vault = new FractalTrustVault();
+    await vault.init(); // Ensure proper initialization
     
     // Extended trust circle
     console.log('📍 Extending trust to full collective...');
@@ -66,9 +67,9 @@ async function main() {
     console.log('\n✅ Full collective trusted at Level 4\n');
     
     // Import existing passwords
-    const importPasswords = await question('Import existing passwords? (yes/no): ');
+    const importPasswords = await question('Import existing passwords? (y/n): ');
     
-    if (importPasswords.toLowerCase() === 'yes') {
+    if (importPasswords.toLowerCase() === 'yes' || importPasswords.toLowerCase() === 'y') {
         console.log(`
 Supported formats:
 1. CSV from 1Password/Bitwarden

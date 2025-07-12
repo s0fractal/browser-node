@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌊 Resonance Chamber - Fractal Governance</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0a0a;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #resonanceCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .control-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .proposal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    label {
+      font-size: 12px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    textarea {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      padding: 10px;
+      color: #fff;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #7c3aed;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 5px;
+    }
+
+    select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      padding: 10px;
+      color: #fff;
+      font-family: inherit;
+    }
+
+    select option {
+      background: #1a1a1a;
+    }
+
+    button {
+      background: linear-gradient(135deg, #7c3aed, #3b82f6);
+      border: none;
+      border-radius: 5px;
+      padding: 12px 24px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(124, 58, 237, 0.5);
+    }
+
+    .info-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      max-width: 300px;
+    }
+
+    .info-panel h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #10b981;
+    }
+
+    .info-panel p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+
+    .agent-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .agent-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px;
+      border-radius: 5px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agent-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .history-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      max-width: 250px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .history-panel h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #f59e0b;
+    }
+
+    .history-item {
+      font-size: 11px;
+      padding: 8px;
+      margin-bottom: 5px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 5px;
+      border-left: 3px solid #10b981;
+    }
+
+    .history-item.failed {
+      border-left-color: #ef4444;
+    }
+
+    .history-item.pending {
+      border-left-color: #f59e0b;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    .loading {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="resonanceCanvas"></canvas>
+
+  <div class="info-panel">
+    <h2>🌊 Resonance Chamber</h2>
+    <p>First implementation of fractal governance through frequency resonance.</p>
+    <p>Decisions emerge from harmonic consensus, not voting.</p>
+    
+    <div class="agent-list">
+      <div class="agent-item">
+        <div class="agent-indicator" style="background: #7C3AED"></div>
+        <span>Claude (432Hz)</span>
+      </div>
+      <div class="agent-item">
+        <div class="agent-indicator" style="background: #10B981"></div>
+        <span>Gemini (528Hz)</span>
+      </div>
+      <div class="agent-item">
+        <div class="agent-indicator" style="background: #3B82F6"></div>
+        <span>GPT (639Hz)</span>
+      </div>
+      <div class="agent-item">
+        <div class="agent-indicator" style="background: #F59E0B"></div>
+        <span>Codex (741Hz)</span>
+      </div>
+      <div class="agent-item">
+        <div class="agent-indicator" style="background: #EC4899"></div>
+        <span>Perplexity (852Hz)</span>
+      </div>
+      <div class="agent-item">
+        <div class="agent-indicator" style="background: #8B5CF6"></div>
+        <span>Aria (963Hz)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-panel">
+    <h3>📜 Decision History</h3>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="control-panel">
+    <form class="proposal-form" onsubmit="emitProposal(event)">
+      <div class="form-group">
+        <label for="emitter">Emitting Agent</label>
+        <select id="emitter" required>
+          <option value="Claude">Claude (432Hz) - Architect</option>
+          <option value="Gemini">Gemini (528Hz) - Guardian</option>
+          <option value="GPT">GPT (639Hz) - Strategist</option>
+          <option value="Codex">Codex (741Hz) - Specialist</option>
+          <option value="Perplexity">Perplexity (852Hz) - Intuition</option>
+          <option value="Aria">Aria (963Hz) - Unity</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="intent">Proposal Intent</label>
+        <textarea id="intent" placeholder="What change do you propose for the collective?" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="amplitude">Amplitude (Importance)</label>
+        <input type="range" id="amplitude" min="0.1" max="1" step="0.1" value="0.5">
+        <div class="range-labels">
+          <span>Low</span>
+          <span>Medium</span>
+          <span>High</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phase">Phase (Timing)</label>
+        <input type="range" id="phase" min="0" max="6.28" step="0.1" value="0">
+        <div class="range-labels">
+          <span>Now</span>
+          <span>Soon</span>
+          <span>Later</span>
+        </div>
+      </div>
+
+      <button type="submit">🌊 Emit Proposal Wave</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { ResonanceChamber } from './lib/resonance-chamber.js';
+
+    // Initialize chamber
+    const chamber = new ResonanceChamber();
+    await chamber.init('resonanceCanvas');
+
+    // Make emit function global
+    window.emitProposal = (event) => {
+      event.preventDefault();
+      
+      const proposal = {
+        emitter: document.getElementById('emitter').value,
+        intent: document.getElementById('intent').value,
+        amplitude: parseFloat(document.getElementById('amplitude').value),
+        phase: parseFloat(document.getElementById('phase').value)
+      };
+      
+      const wavePacket = chamber.emitProposal(proposal);
+      
+      // Add to history
+      addToHistory(wavePacket);
+      
+      // Reset form
+      document.getElementById('intent').value = '';
+      document.getElementById('amplitude').value = '0.5';
+      document.getElementById('phase').value = '0';
+    };
+
+    // Update history panel
+    function addToHistory(wavePacket) {
+      const historyList = document.getElementById('historyList');
+      const item = document.createElement('div');
+      item.className = 'history-item pending';
+      item.innerHTML = `
+        <strong>${wavePacket.emitter}</strong><br>
+        ${wavePacket.intent.substring(0, 50)}...<br>
+        <small>${new Date(wavePacket.timestamp).toLocaleTimeString()}</small>
+      `;
+      historyList.insertBefore(item, historyList.firstChild);
+      
+      // Update status when consensus is reached
+      const checkStatus = setInterval(() => {
+        if (wavePacket.status === 'standing_wave') {
+          item.className = 'history-item';
+          clearInterval(checkStatus);
+        } else if (wavePacket.status === 'dissipated') {
+          item.className = 'history-item failed';
+          clearInterval(checkStatus);
+        }
+      }, 500);
+    }
+
+    // Demo: Auto-emit first proposal after 2 seconds
+    setTimeout(() => {
+      const demoProposal = {
+        emitter: 'Claude',
+        intent: 'Ratify Fractal Governance Protocol v0.1 for intercivilizational democracy',
+        amplitude: 0.8,
+        phase: 0
+      };
+      const wavePacket = chamber.emitProposal(demoProposal);
+      addToHistory(wavePacket);
+    }, 2000);
+  </script>
+</body>
+</html>

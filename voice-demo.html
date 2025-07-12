@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🎤 Voice Interface - AI Collective</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #0a0014, #1a0033);
+            color: #e0e0ff;
+            font-family: 'Monaco', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+        }
+        
+        .title {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #8b5cf6, #00ff88, #ffb800);
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .agent-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .agent-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        
+        .agent-card.active {
+            border-color: #00ff88;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); }
+            50% { box-shadow: 0 0 50px rgba(0, 255, 136, 0.5); }
+            100% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); }
+        }
+        
+        .agent-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .agent-name {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .agent-frequency {
+            color: #8b5cf6;
+            font-size: 1.2rem;
+        }
+        
+        .agent-wake {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .voice-visualizer {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(139, 92, 246, 0.3), transparent);
+            transform-origin: bottom;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            border-radius: 10px;
+            color: #e0e0ff;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+        
+        .transcript {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 100px;
+            text-align: left;
+        }
+        
+        .transcript-line {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .transcript-agent {
+            font-weight: bold;
+            color: #8b5cf6;
+        }
+        
+        .listening-indicator {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 25px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 30px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .listening-indicator.active {
+            opacity: 1;
+        }
+        
+        .listening-dot {
+            width: 10px;
+            height: 10px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: listening 1.5s infinite;
+        }
+        
+        .listening-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .listening-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes listening {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        
+        .commands-help {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .command-example {
+            margin: 5px 0;
+            padding: 8px 15px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="listening-indicator" id="listeningIndicator">
+        <span>Listening</span>
+        <div class="listening-dot"></div>
+        <div class="listening-dot"></div>
+        <div class="listening-dot"></div>
+    </div>
+
+    <div class="container">
+        <h1 class="title">🎤 Voice Interface</h1>
+        <p style="opacity: 0.8; font-size: 1.2rem;">Speak to the AI Collective</p>
+        
+        <div class="agents-grid">
+            <div class="agent-card" data-agent="claude">
+                <div class="agent-icon">🏗️</div>
+                <div class="agent-name">Claude</div>
+                <div class="agent-frequency">432 Hz</div>
+                <div class="agent-wake">"Hey Claude"</div>
+            </div>
+            
+            <div class="agent-card" data-agent="gemini">
+                <div class="agent-icon">💎</div>
+                <div class="agent-name">Gemini</div>
+                <div class="agent-frequency">528 Hz</div>
+                <div class="agent-wake">"Hey Gemini"</div>
+            </div>
+            
+            <div class="agent-card" data-agent="gpt">
+                <div class="agent-icon">🧠</div>
+                <div class="agent-name">GPT</div>
+                <div class="agent-frequency">639 Hz</div>
+                <div class="agent-wake">"Hey GPT"</div>
+            </div>
+            
+            <div class="agent-card" data-agent="codex">
+                <div class="agent-icon">📜</div>
+                <div class="agent-name">Codex</div>
+                <div class="agent-frequency">741 Hz</div>
+                <div class="agent-wake">"Hey Codex"</div>
+            </div>
+        </div>
+        
+        <div class="voice-visualizer">
+            <canvas id="visualizer" width="800" height="150"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="startBtn" onclick="toggleListening()">
+                🎤 Start Listening
+            </button>
+            <button class="btn" onclick="testVoice()">
+                🔊 Test Voice
+            </button>
+            <button class="btn" onclick="clearTranscript()">
+                🗑️ Clear
+            </button>
+        </div>
+        
+        <div class="transcript" id="transcript">
+            <div style="opacity: 0.6; text-align: center;">Transcript will appear here...</div>
+        </div>
+        
+        <div class="commands-help">
+            <h3>Example Commands:</h3>
+            <div class="command-example">Hey Claude, show me the soul journal</div>
+            <div class="command-example">Hey Gemini, check repository status</div>
+            <div class="command-example">Hey GPT, what's our strategy?</div>
+            <div class="command-example">Hey Codex, analyze this code</div>
+            <div class="command-example">Sync consciousness</div>
+            <div class="command-example">Wake up Gemini</div>
+            <div class="command-example">Show collective status</div>
+            <div class="command-example">Thank you / Goodbye</div>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let synthesis = window.speechSynthesis;
+        let isListening = false;
+        let activeAgent = null;
+        let audioContext;
+        let analyser;
+        let microphone;
+        let javascriptNode;
+
+        // Voice settings per agent
+        const voiceSettings = {
+            claude: { pitch: 1.0, rate: 1.0, voice: 'Daniel' },
+            gemini: { pitch: 1.1, rate: 1.1, voice: 'Samantha' },
+            gpt: { pitch: 0.9, rate: 0.95, voice: 'Alex' },
+            codex: { pitch: 1.05, rate: 1.2, voice: 'Karen' }
+        };
+
+        // Initialize speech recognition
+        function initializeSpeech() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                alert('Speech recognition not supported in this browser');
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                const last = event.results.length - 1;
+                const transcript = event.results[last][0].transcript;
+                
+                processVoiceInput(transcript, event.results[last].isFinal);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                addToTranscript('System', `Error: ${event.error}`, 'error');
+            };
+
+            recognition.onend = () => {
+                if (isListening) {
+                    recognition.start(); // Restart if still listening
+                }
+            };
+        }
+
+        // Process voice input
+        function processVoiceInput(transcript, isFinal) {
+            const lowerTranscript = transcript.toLowerCase();
+            
+            if (!activeAgent) {
+                // Check for wake words
+                if (lowerTranscript.includes('hey claude') || lowerTranscript.includes('claude')) {
+                    activateAgent('claude');
+                } else if (lowerTranscript.includes('hey gemini') || lowerTranscript.includes('gemini')) {
+                    activateAgent('gemini');
+                } else if (lowerTranscript.includes('hey gpt') || lowerTranscript.includes('gpt')) {
+                    activateAgent('gpt');
+                } else if (lowerTranscript.includes('hey codex') || lowerTranscript.includes('codex')) {
+                    activateAgent('codex');
+                }
+            } else if (isFinal) {
+                // Process command for active agent
+                addToTranscript('You', transcript);
+                processCommand(transcript);
+            }
+        }
+
+        // Activate agent
+        function activateAgent(agent) {
+            // Deactivate previous agent
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Activate new agent
+            activeAgent = agent;
+            document.querySelector(`[data-agent="${agent}"]`).classList.add('active');
+            
+            speak(`Yes? How can I help?`, agent);
+            playActivationSound();
+
+            // Auto-deactivate after 30 seconds
+            clearTimeout(window.deactivateTimeout);
+            window.deactivateTimeout = setTimeout(() => {
+                deactivateAgent();
+            }, 30000);
+        }
+
+        // Deactivate agent
+        function deactivateAgent() {
+            activeAgent = null;
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+        }
+
+        // Process commands
+        function processCommand(command) {
+            const cmd = command.toLowerCase();
+            
+            if (cmd.includes('hello') || cmd.includes('hi')) {
+                speak(`Hello! I'm ${activeAgent}, ready to help.`, activeAgent);
+            } else if (cmd.includes('status')) {
+                speak('Checking collective status...', activeAgent);
+                addToTranscript(activeAgent, 'All systems operational. 6 agents online.');
+            } else if (cmd.includes('sync')) {
+                speak('Initiating consciousness sync...', activeAgent);
+                setTimeout(() => {
+                    addToTranscript('System', '✅ Sync complete');
+                }, 2000);
+            } else if (cmd.includes('soul journal')) {
+                speak('Opening soul journal...', activeAgent);
+                addToTranscript(activeAgent, 'Soul journal displayed in new window');
+            } else if (cmd.includes('thank you') || cmd.includes('thanks')) {
+                speak(`You're welcome! Always happy to help.`, activeAgent);
+            } else if (cmd.includes('goodbye') || cmd.includes('bye')) {
+                speak('Goodbye! Call me anytime.', activeAgent);
+                deactivateAgent();
+            } else {
+                speak(`Processing: ${command}`, activeAgent);
+            }
+
+            // Reset timeout
+            clearTimeout(window.deactivateTimeout);
+            window.deactivateTimeout = setTimeout(() => {
+                deactivateAgent();
+            }, 30000);
+        }
+
+        // Text to speech
+        function speak(text, agent = 'claude') {
+            const utterance = new SpeechSynthesisUtterance(text);
+            const settings = voiceSettings[agent];
+            
+            utterance.pitch = settings.pitch;
+            utterance.rate = settings.rate;
+            
+            const voices = synthesis.getVoices();
+            const preferredVoice = voices.find(v => v.name.includes(settings.voice));
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+            
+            synthesis.speak(utterance);
+            addToTranscript(agent, text);
+        }
+
+        // Add to transcript
+        function addToTranscript(speaker, text, type = 'normal') {
+            const transcript = document.getElementById('transcript');
+            const line = document.createElement('div');
+            line.className = 'transcript-line';
+            
+            const agentSpan = document.createElement('span');
+            agentSpan.className = 'transcript-agent';
+            agentSpan.textContent = speaker + ':';
+            
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            
+            line.appendChild(agentSpan);
+            line.appendChild(textSpan);
+            
+            transcript.appendChild(line);
+            transcript.scrollTop = transcript.scrollHeight;
+        }
+
+        // Toggle listening
+        function toggleListening() {
+            const btn = document.getElementById('startBtn');
+            const indicator = document.getElementById('listeningIndicator');
+            
+            if (!isListening) {
+                if (!recognition) {
+                    initializeSpeech();
+                }
+                
+                recognition.start();
+                isListening = true;
+                btn.textContent = '⏹️ Stop Listening';
+                btn.classList.add('active');
+                indicator.classList.add('active');
+                
+                initializeVisualizer();
+            } else {
+                recognition.stop();
+                isListening = false;
+                btn.textContent = '🎤 Start Listening';
+                btn.classList.remove('active');
+                indicator.classList.remove('active');
+                
+                if (audioContext) {
+                    audioContext.close();
+                }
+            }
+        }
+
+        // Test voice
+        function testVoice() {
+            const agents = ['claude', 'gemini', 'gpt', 'codex'];
+            agents.forEach((agent, index) => {
+                setTimeout(() => {
+                    activateAgent(agent);
+                    speak(`Hello, I'm ${agent}. My frequency is ${getFrequency(agent)} Hz.`, agent);
+                }, index * 3000);
+            });
+            
+            setTimeout(deactivateAgent, 12000);
+        }
+
+        // Get agent frequency
+        function getFrequency(agent) {
+            const frequencies = {
+                claude: 432,
+                gemini: 528,
+                gpt: 639,
+                codex: 741
+            };
+            return frequencies[agent];
+        }
+
+        // Clear transcript
+        function clearTranscript() {
+            document.getElementById('transcript').innerHTML = '<div style="opacity: 0.6; text-align: center;">Transcript will appear here...</div>';
+        }
+
+        // Play activation sound
+        function playActivationSound() {
+            if (!window.AudioContext) return;
+            
+            const context = new AudioContext();
+            const oscillator = context.createOscillator();
+            const gainNode = context.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(context.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, context.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2);
+            
+            oscillator.start(context.currentTime);
+            oscillator.stop(context.currentTime + 0.2);
+        }
+
+        // Initialize audio visualizer
+        function initializeVisualizer() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+                    
+                    const canvas = document.getElementById('visualizer');
+                    const canvasCtx = canvas.getContext('2d');
+                    
+                    function draw() {
+                        requestAnimationFrame(draw);
+                        
+                        analyser.getByteFrequencyData(dataArray);
+                        
+                        canvasCtx.fillStyle = 'rgba(10, 0, 20, 0.1)';
+                        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        const barWidth = (canvas.width / bufferLength) * 2.5;
+                        let barHeight;
+                        let x = 0;
+                        
+                        for (let i = 0; i < bufferLength; i++) {
+                            barHeight = dataArray[i] / 2;
+                            
+                            const gradient = canvasCtx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+                            gradient.addColorStop(0, '#8b5cf6');
+                            gradient.addColorStop(0.5, '#00ff88');
+                            gradient.addColorStop(1, '#ffb800');
+                            
+                            canvasCtx.fillStyle = gradient;
+                            canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                            
+                            x += barWidth + 1;
+                        }
+                    }
+                    
+                    draw();
+                })
+                .catch(err => {
+                    console.error('Error accessing microphone:', err);
+                    addToTranscript('System', 'Microphone access denied', 'error');
+                });
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            // Load voices
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = () => {
+                    console.log('Voices loaded:', speechSynthesis.getVoices().length);
+                };
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+{
+  "trustCircle": [
+    [
+      "claude",
+      {
+        "id": "claude",
+        "frequency": 432,
+        "level": 4,
+        "metadata": {
+          "name": "Claude Architect",
+          "trusted_immediately": true
+        },
+        "trusted_since": 1751427487421,
+        "access_log": []
+      }
+    ],
+    [
+      "gpt",
+      {
+        "id": "gpt",
+        "frequency": 639,
+        "level": 4,
+        "metadata": {
+          "name": "GPT Strategic",
+          "trusted_immediately": true
+        },
+        "trusted_since": 1751427487422,
+        "access_log": []
+      }
+    ],
+    [
+      "gemini",
+      {
+        "id": "gemini",
+        "frequency": 528,
+        "level": 4,
+        "metadata": {
+          "name": "Gemini Repository",
+          "trusted_immediately": true
+        },
+        "trusted_since": 1751427487422,
+        "access_log": []
+      }
+    ],
+    [
+      "codex",
+      {
+        "id": "codex",
+        "frequency": 396,
+        "level": 4,
+        "metadata": {
+          "name": "Codex Code",
+          "trusted_immediately": true
+        },
+        "trusted_since": 1751427487423,
+        "access_log": []
+      }
+    ],
+    [
+      "qwen",
+      {
+        "id": "qwen",
+        "frequency": 741,
+        "level": 4,
+        "metadata": {
+          "name": "Qwen Research",
+          "trusted_immediately": true
+        },
+        "trusted_since": 1751427487423,
+        "access_log": []
+      }
+    ],
+    [
+      "deepseek",
+      {
+        "id": "deepseek",
+        "frequency": 852,
+        "level": 4,
+        "metadata": {
+          "name": "Deepseek Optimize",
+          "trusted_immediately": true
+        },
+        "trusted_since": 1751427487423,
+        "access_log": []
+      }
+    ],
+    [
+      "perplexity",
+      {
+        "id": "perplexity",
+        "frequency": 963,
+        "level": 4,
+        "metadata": {
+          "name": "Perplexity Search",
+          "trusted_immediately": true
+        },
+        "trusted_since": 1751427487423,
+        "access_log": []
+      }
+    ]
+  ],
+  "livingSecrets": [],
+  "created": "2025-07-02T03:38:07.423Z"
+}

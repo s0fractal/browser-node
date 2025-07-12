@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🆔 Living Identity Vault</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #0a0014, #1a0033);
+            color: #e0e0ff;
+            font-family: 'Monaco', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: rgba(139, 92, 246, 0.1);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, #8b5cf6, #ec4899, #00ff88);
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .subtitle {
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-header {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .identity-grid {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .identity-card {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            position: relative;
+        }
+        
+        .identity-type {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #8b5cf6;
+        }
+        
+        .identity-value {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+        
+        .sharing-info {
+            margin-top: 15px;
+        }
+        
+        .service-tag {
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            border-radius: 15px;
+            padding: 3px 10px;
+            margin: 2px;
+            font-size: 0.8rem;
+        }
+        
+        .service-tag.legal {
+            background: rgba(255, 100, 100, 0.2);
+            border-color: #ff6464;
+        }
+        
+        .privacy-audit {
+            grid-column: 1 / -1;
+        }
+        
+        .audit-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .risk-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .risk-low { background: #00ff88; }
+        .risk-medium { background: #ffb800; }
+        .risk-high { background: #ff4444; }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(139, 92, 246, 0.3);
+            color: #e0e0ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        
+        .btn:hover {
+            background: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: rgba(255, 68, 68, 0.3);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(255, 68, 68, 0.5);
+        }
+        
+        .sharing-map {
+            margin-top: 20px;
+        }
+        
+        .sharing-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .timeline {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            padding: 10px;
+            border-left: 3px solid rgba(139, 92, 246, 0.5);
+            margin: 10px 0;
+        }
+        
+        .timeline-time {
+            color: #8b5cf6;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        
+        .timeline-action {
+            font-size: 0.9rem;
+        }
+        
+        .forget-section {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: #1a0033;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+        
+        .demo-banner {
+            background: rgba(255, 184, 0, 0.2);
+            border: 1px solid #ffb800;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🆔 Living Identity Vault</h1>
+        <p class="subtitle">Контроль особистих даних і система забуття</p>
+    </div>
+    
+    <div class="container">
+        <div class="demo-banner">
+            ⚡ DEMO MODE - Статичні дані для демонстрації концепції
+        </div>
+        
+        <!-- Identity Data Section -->
+        <div class="section">
+            <div class="section-header">
+                <span>🆔</span>
+                <span>Особисті дані</span>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" onclick="addIdentity()">➕ Додати дані</button>
+                <button class="btn" onclick="shareData()">🔗 Поділитися</button>
+                <button class="btn btn-danger" onclick="forgetData()">🗑️ Забути</button>
+            </div>
+            
+            <div class="identity-grid" id="identityGrid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Sharing Map Section -->
+        <div class="section">
+            <div class="section-header">
+                <span>🌐</span>
+                <span>Карта розповсюдження</span>
+            </div>
+            
+            <div class="sharing-map" id="sharingMap">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Privacy Audit Section -->
+        <div class="section privacy-audit">
+            <div class="section-header">
+                <span>🔍</span>
+                <span>Аудит приватності</span>
+            </div>
+            
+            <div class="audit-stats" id="auditStats">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Timeline Section -->
+        <div class="section">
+            <div class="section-header">
+                <span>📜</span>
+                <span>Історія дій</span>
+            </div>
+            
+            <div class="timeline" id="timeline">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Forget Section -->
+        <div class="section forget-section">
+            <div class="section-header">
+                <span>🗑️</span>
+                <span>Система забуття</span>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-danger" onclick="massForget()">💥 Масове забуття</button>
+                <button class="btn btn-danger" onclick="gdprRequest()">⚖️ GDPR запит</button>
+                <button class="btn" onclick="scheduleForget()">⏰ Заплановане забуття</button>
+            </div>
+            
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 15px;">
+                Система автоматично поважає legal requirements і не дозволить забути дані, які необхідні за законом.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Modal for actions -->
+    <div class="modal" id="actionModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Дія</h2>
+            <div id="modalContent">
+                <!-- Dynamic content -->
+            </div>
+            <div class="controls" style="margin-top: 20px;">
+                <button class="btn" onclick="hideModal()">Закрити</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Demo data
+        const demoIdentities = [
+            {
+                type: 'email',
+                value: 'user@example.com',
+                soul: 'email-primary',
+                birth: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago
+                knownBy: {
+                    'github.com': { accessLevel: 'full', purpose: 'account_recovery', canRevoke: true },
+                    'bank': { accessLevel: 'notifications', purpose: 'security_alerts', canRevoke: false, legalRequirement: true },
+                    'newsletter-service': { accessLevel: 'marketing', purpose: 'updates', canRevoke: true }
+                },
+                history: [
+                    { timestamp: Date.now() - (30 * 24 * 60 * 60 * 1000), action: 'shared', service: 'github.com' },
+                    { timestamp: Date.now() - (25 * 24 * 60 * 60 * 1000), action: 'shared', service: 'bank' },
+                    { timestamp: Date.now() - (10 * 24 * 60 * 60 * 1000), action: 'shared', service: 'newsletter-service' }
+                ]
+            },
+            {
+                type: 'phone',
+                value: '+380XXXXXXXXX',
+                soul: 'phone-primary',
+                birth: Date.now() - (45 * 24 * 60 * 60 * 1000), // 45 days ago
+                knownBy: {
+                    'bank': { accessLevel: '2fa_only', purpose: 'security', canRevoke: false, legalRequirement: true },
+                    'delivery-service': { accessLevel: 'logistics', purpose: 'delivery', canRevoke: true }
+                },
+                history: [
+                    { timestamp: Date.now() - (45 * 24 * 60 * 60 * 1000), action: 'shared', service: 'bank' },
+                    { timestamp: Date.now() - (5 * 24 * 60 * 60 * 1000), action: 'shared', service: 'delivery-service' }
+                ]
+            },
+            {
+                type: 'ssh_key',
+                value: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...',
+                soul: 'ssh-production',
+                birth: Date.now() - (60 * 24 * 60 * 60 * 1000), // 60 days ago
+                knownBy: {
+                    'production-vps': { accessLevel: 'full', purpose: 'server_access', canRevoke: true },
+                    'backup-server': { accessLevel: 'limited', purpose: 'backup', canRevoke: true }
+                },
+                history: [
+                    { timestamp: Date.now() - (60 * 24 * 60 * 60 * 1000), action: 'shared', service: 'production-vps' },
+                    { timestamp: Date.now() - (30 * 24 * 60 * 60 * 1000), action: 'shared', service: 'backup-server' }
+                ]
+            }
+        ];
+        
+        function renderIdentities() {
+            const grid = document.getElementById('identityGrid');
+            grid.innerHTML = '';
+            
+            demoIdentities.forEach(identity => {
+                const risks = calculateRisks(identity);
+                const riskLevel = risks.length >= 2 ? 'high' : risks.length === 1 ? 'medium' : 'low';
+                
+                const card = document.createElement('div');
+                card.className = 'identity-card';
+                card.innerHTML = `
+                    <div class="risk-indicator risk-${riskLevel}"></div>
+                    <div class="identity-type">${getTypeIcon(identity.type)} ${identity.type}</div>
+                    <div class="identity-value">${identity.value}</div>
+                    <div class="sharing-info">
+                        <strong>Поділено з:</strong><br>
+                        ${Object.entries(identity.knownBy).map(([service, info]) => 
+                            `<span class="service-tag ${info.legalRequirement ? 'legal' : ''}">${service}</span>`
+                        ).join('')}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderSharingMap() {
+            const map = document.getElementById('sharingMap');
+            map.innerHTML = '';
+            
+            const serviceMap = {};
+            
+            demoIdentities.forEach(identity => {
+                Object.entries(identity.knownBy).forEach(([service, info]) => {
+                    if (!serviceMap[service]) {
+                        serviceMap[service] = [];
+                    }
+                    serviceMap[service].push({
+                        type: identity.type,
+                        accessLevel: info.accessLevel,
+                        canRevoke: info.canRevoke
+                    });
+                });
+            });
+            
+            for (const [service, data] of Object.entries(serviceMap)) {
+                const row = document.createElement('div');
+                row.className = 'sharing-row';
+                row.innerHTML = `
+                    <div>
+                        <strong>${service}</strong><br>
+                        <small>${data.map(d => `${d.type} (${d.accessLevel})`).join(', ')}</small>
+                    </div>
+                    <div>
+                        ${data.every(d => d.canRevoke) ? 
+                            '<button class="btn btn-danger" onclick="forgetFromService(\\''+service+'\\')">🗑️ Забути</button>' :
+                            '<span style="color: #ff6464;">⚖️ Legal</span>'
+                        }
+                    </div>
+                `;
+                map.appendChild(row);
+            }
+        }
+        
+        function renderAuditStats() {
+            const stats = document.getElementById('auditStats');
+            stats.innerHTML = '';
+            
+            const totalEntities = demoIdentities.length;
+            let totalShares = 0;
+            let riskCounts = { low: 0, medium: 0, high: 0 };
+            let serviceCount = new Set();
+            
+            demoIdentities.forEach(identity => {
+                const shareCount = Object.keys(identity.knownBy).length;
+                totalShares += shareCount;
+                
+                Object.keys(identity.knownBy).forEach(service => serviceCount.add(service));
+                
+                const risks = calculateRisks(identity);
+                const riskLevel = risks.length >= 2 ? 'high' : risks.length === 1 ? 'medium' : 'low';
+                riskCounts[riskLevel]++;
+            });
+            
+            const statsData = [
+                { label: 'Всього сутностей', value: totalEntities, color: '#8b5cf6' },
+                { label: 'Всього поділень', value: totalShares, color: '#00ff88' },
+                { label: 'Унікальних сервісів', value: serviceCount.size, color: '#ffb800' },
+                { label: 'Високий ризик', value: riskCounts.high, color: '#ff4444' }
+            ];
+            
+            statsData.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <div class="stat-number" style="color: ${stat.color}">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                `;
+                stats.appendChild(card);
+            });
+        }
+        
+        function renderTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            
+            const allHistory = [];
+            demoIdentities.forEach(identity => {
+                identity.history.forEach(item => {
+                    allHistory.push({
+                        ...item,
+                        identityType: identity.type
+                    });
+                });
+            });
+            
+            allHistory.sort((a, b) => b.timestamp - a.timestamp);
+            
+            allHistory.forEach(item => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                timelineItem.innerHTML = `
+                    <div class="timeline-time">${new Date(item.timestamp).toLocaleDateString()}</div>
+                    <div class="timeline-action">
+                        ${getActionIcon(item.action)} ${item.identityType} ${item.action} з ${item.service}
+                    </div>
+                `;
+                timeline.appendChild(timelineItem);
+            });
+        }
+        
+        function calculateRisks(identity) {
+            const risks = [];
+            const age = Date.now() - identity.birth;
+            const shareCount = Object.keys(identity.knownBy).length;
+            
+            if (age > 365 * 24 * 60 * 60 * 1000) risks.push('old_data');
+            if (shareCount > 5) risks.push('widely_shared');
+            
+            return risks;
+        }
+        
+        function getTypeIcon(type) {
+            const icons = {
+                email: '📧',
+                phone: '📱',
+                ssh_key: '🔑',
+                document: '📄',
+                address: '🏠'
+            };
+            return icons[type] || '🔐';
+        }
+        
+        function getActionIcon(action) {
+            const icons = {
+                shared: '🔗',
+                forgotten: '🗑️',
+                updated: '🔄',
+                accessed: '👁️'
+            };
+            return icons[action] || '📝';
+        }
+        
+        // Action functions
+        function addIdentity() {
+            showModal('Додати особисті дані', `
+                <p>У повній версії тут буде форма для додавання нових особистих даних:</p>
+                <ul>
+                    <li>📧 Email адреси</li>
+                    <li>📱 Телефони</li>
+                    <li>🔑 SSH ключі</li>
+                    <li>📄 Документи</li>
+                    <li>🏠 Адреси</li>
+                </ul>
+                <p>Кожен тип даних стане живою сутністю з власним lifecycle.</p>
+            `);
+        }
+        
+        function shareData() {
+            showModal('Поділитися даними', `
+                <p>Виберіть дані для sharing з новим сервісом:</p>
+                <p><strong>Рівні доступу:</strong></p>
+                <ul>
+                    <li><strong>full</strong> - повний доступ</li>
+                    <li><strong>limited</strong> - обмежений доступ</li>
+                    <li><strong>2fa_only</strong> - тільки для 2FA</li>
+                    <li><strong>notifications</strong> - тільки сповіщення</li>
+                </ul>
+                <p>Система автоматично записуватиме purpose і можливість revoke.</p>
+            `);
+        }
+        
+        function forgetData() {
+            showModal('Забути дані', `
+                <p>Доступні методи забуття:</p>
+                <ul>
+                    <li><strong>🔌 API</strong> - через API сервісу</li>
+                    <li><strong>⚖️ GDPR</strong> - офіційний GDPR запит</li>
+                    <li><strong>💥 Nuclear</strong> - зміна самих даних</li>
+                </ul>
+                <p>⚠️ Legal requirements блокуватимуть забуття коли це заборонено законом.</p>
+            `);
+        }
+        
+        function forgetFromService(service) {
+            showModal(`Забути з ${service}`, `
+                <p>Спроба забути всі дані з сервісу <strong>${service}</strong>:</p>
+                <p>${service === 'bank' ? 
+                    '❌ Неможливо - legal requirement (банки мають право зберігати дані)' :
+                    '✅ Можливо - відправимо API запит на видалення'
+                }</p>
+            `);
+        }
+        
+        function massForget() {
+            showModal('Масове забуття', `
+                <p>⚠️ <strong>НЕБЕЗПЕЧНА ДІЯ</strong></p>
+                <p>Масове забуття спробує видалити дані з усіх сервісів де це можливо.</p>
+                <p>Система автоматично пропустить:</p>
+                <ul>
+                    <li>Legal requirements</li>
+                    <li>Contractual obligations</li>
+                    <li>Critical security data</li>
+                </ul>
+                <p>У реальній системі тут буде confirmation dialog.</p>
+            `);
+        }
+        
+        function gdprRequest() {
+            showModal('GDPR запит', `
+                <p>📋 <strong>GDPR Article 17 - Right to Erasure</strong></p>
+                <p>Система автоматично згенерує і відправить офіційні GDPR запити до всіх сервісів.</p>
+                <p>Включає:</p>
+                <ul>
+                    <li>Юридично правильне формулювання</li>
+                    <li>Посилання на статтю 17 GDPR</li>
+                    <li>Автоматичне відстеження відповідей</li>
+                    <li>Escalation при ігноруванні</li>
+                </ul>
+            `);
+        }
+        
+        function scheduleForget() {
+            showModal('Заплановане забуття', `
+                <p>⏰ <strong>Smart Forgetting Rules</strong></p>
+                <p>Налаштуйте автоматичне забуття:</p>
+                <ul>
+                    <li><strong>Time-based:</strong> після певного часу</li>
+                    <li><strong>Usage-based:</strong> якщо не використовується</li>
+                    <li><strong>Purpose-complete:</strong> коли мета досягнута</li>
+                    <li><strong>Risk-based:</strong> при підвищенні ризику</li>
+                </ul>
+            `);
+        }
+        
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('actionModal').style.display = 'flex';
+        }
+        
+        function hideModal() {
+            document.getElementById('actionModal').style.display = 'none';
+        }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            renderIdentities();
+            renderSharingMap();
+            renderAuditStats();
+            renderTimeline();
+        });
+    </script>
+</body>
+</html>
